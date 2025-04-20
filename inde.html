@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Sega 1-v-1 Football Tournament</title> <style>
+/* --- CSS --- (Keep existing styles, add/modify as below) --- */
+:root {
+    --accent: #10b981; /* Emerald green */
+    --bg: #0f172a; /* Slate blue dark */
+    --fg: #f8fafc; /* Slate light */
+    --card: #1e293b; /* Slate blue darker */
+    --input-bg: #334155; /* Slate blue medium */
+    --border-color: #475569; /* Slate blue lighter */
+    --win-color: var(--accent);
+    --loss-color: #f43f5e; /* Rose */
+}
+* { box-sizing: border-box; font-family: system-ui, Segoe UI, Roboto, Helvetica, Arial, sans-serif; margin: 0; padding: 0; }
+body { background: var(--bg); color: var(--fg); min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 1rem; }
+h1 { font-size: 1.8rem; margin: 1rem 0; text-align: center; }
+button { padding: 0.6rem 1rem; border: none; border-radius: 0.5rem; font-size: 1rem; background: var(--accent); color: #fff; font-weight: 600; cursor: pointer; margin: 0.3rem; transition: transform 0.1s ease; }
+button.secondary { background: var(--card); }
+#app { width: 100%; max-width: 700px; }
+.card { background: var(--card); padding: 1rem; border-radius: 1rem; margin-bottom: 1rem; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); }
+.player-row { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem; }
+.player-color { width: 32px; height: 32px; border-radius: 50%; border: 2px solid #fff; cursor: pointer; flex-shrink: 0; }
+.player-input { flex-grow: 1; background-color: var(--input-bg); color: var(--fg); border: 1px solid var(--border-color); padding: 0.5rem; border-radius: 0.3rem;}
+input[type="color"] { width: 40px; height: 40px; padding: 0; border: none; background: transparent; cursor: pointer; flex-shrink: 0; }
+input[type="number"] { width: 60px; padding: 0.5rem; background: var(--input-bg); color: var(--fg); border: 1px solid var(--border-color); border-radius: 0.3rem; text-align: center; font-size: 1.2rem; -moz-appearance: textfield; }
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+
+.match-input-area { display: flex; align-items: center; justify-content: center; gap: 1rem; margin-top: 1rem; margin-bottom: 1rem;}
+.match-input-area .p-box { flex: 1; text-align: center; }
+.match-input-area input[type="number"] { margin: 0 auto; display: block; }
+.match-input-area button { margin-top: 0.5rem; }
+
+.versus { display: flex; align-items: center; justify-content: space-around; gap: 0.5rem; margin: 1rem 0; }
+.versus .pname { font-size: 1.2rem; font-weight: 600; }
+.vs-label { font-size: 1.5rem; font-weight: 700; }
+.p-box { display: flex; flex-direction: column; align-items: center; gap: 0.3rem; }
+.p-box .pname.winner { color: var(--win-color); font-weight: bold;} /* Style winner in playoff box */
+.p-box .pname.loser { text-decoration: line-through; opacity: 0.7;} /* Style loser */
+
+.standings { overflow-x: auto; }
+.standings table { width: 100%; border-collapse: collapse; margin-top: 0.5rem; font-size: 0.9rem; }
+.standings th, .standings td { padding: 0.5rem 0.3rem; text-align: center; white-space: nowrap; }
+.standings tr:nth-child(even) { background: #334155; }
+.standings th { background: var(--accent); color: var(--bg); font-weight: bold; }
+.standings .player-name-col { text-align: left; padding-left: 0.5rem; }
+.last-match { opacity: 0.8; margin-top: 1rem; text-align: center; font-size: 0.9rem;}
+.group-title, .section-title { font-size: 1.5rem; margin-bottom: 0.75rem; color: var(--accent); border-bottom: 1px solid var(--accent); padding-bottom: 0.3rem; }
+.settings-row { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem; }
+.settings-row label { flex-basis: 150px; flex-shrink: 0; }
+.visualization { margin-top: 1rem; }
+.visualization svg { width: 100%; min-height: 200px; background: #0f172a; border-radius: 0.5rem; border: 1px solid var(--card); }
+/* --- SVG styles --- (keep existing) --- */
+.qualifier-node { fill: var(--accent); }
+.qualifier-text { fill: var(--fg); font-size: 0.8rem; text-anchor: middle; }
+.qualifier-line { stroke: var(--fg); stroke-width: 1; opacity: 0.5; }
+.playoff-area-text { fill: var(--fg); font-size: 1rem; text-anchor: middle; font-weight: bold; }
+
+.playoff-bracket { margin-top: 1rem; }
+.playoff-round { margin-bottom: 1rem; border-left: 2px solid var(--border-color); padding-left: 1rem;}
+.playoff-match { display: flex; justify-content: space-between; align-items: center; padding: 0.5rem; border-bottom: 1px dashed var(--border-color); }
+.playoff-match .p-box { flex-basis: 40%; }
+.playoff-match .match-score { font-weight: bold; }
+
+.champion-box { text-align: center; padding: 2rem; }
+.champion-box .pname { font-size: 2rem; color: var(--win-color);}
+.champion-box .player-color { width: 80px; height: 80px; margin: 0 auto 0.5rem auto; }
+
+
+@media (hover: hover) { button:hover { transform: scale(1.03); } }
+</style>
+</head>
+<body>
+
+<h1>Sega 1-v-1 Football Tournament</h1>
+<div id="app"></div>
+
+<script>
+(function() {
+    const STORAGE_KEY = 'segaRR_v4_playoffs'; // Updated storage key
+    let state = null;
+
+    // --- Initialization & State Management ---
+    init();
+
+    function init() {
+        loadState();
+        render();
+    }
+
+    function loadState() {
+        try {
+            state = JSON.parse(localStorage.getItem(STORAGE_KEY)) || null;
+            // Add validation/migration if state structure changes significantly later
+        } catch (e) {
+            console.error("Failed to load state:", e);
+            state = null;
+        }
+    }
+
+    function saveState() {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    }
+
+    function clearState() {
+        localStorage.removeItem(STORAGE_KEY);
+        state = null;
+    }
+
+    // --- Core Rendering Logic ---
+    function render() {
+        const app = document.getElementById('app');
+        app.innerHTML = '';
+
+        if (!state) {
+            renderCreateForm(app);
+        } else if (state.phase === 'group') {
+            renderGroupStage(app);
+        } else if (state.phase === 'playoff_selection') {
+            // This phase is now transitional, directly call playoff render
+            renderPlayoffSelection(app); // Keep for review/viz
+            renderPlayoffs(app); // Render the first playoff match UI
+        } else if (state.phase === 'playoff') {
+             renderPlayoffs(app);
+        } else if (state.phase === 'completed') {
+             renderChampion(app);
+        } else {
+            // Fallback / Error state
+            console.error("Unknown state phase:", state.phase);
+            renderCreateForm(app); // Go back to start
+        }
+    }
+
+    // --- Phase 1: Tournament Setup ---
+    function renderCreateForm(app) { /* ... unchanged ... */
+        const card = div('div', 'card');
+        const settingsCont = div('div');
+        const listCont = div('div');
+        const addBtn = btn('Add Player');
+        const startBtn = btn('Start Tournament', 'secondary');
+
+        // Group Size Setting
+        const groupSizeRow = div('div', 'settings-row');
+        groupSizeRow.innerHTML = `
+            <label for="maxGroupSizeInput">Max Players per Group:</label>
+            <input type="number" id="maxGroupSizeInput" min="2" value="4" class="player-input" style="width: 60px; flex-grow: 0;">
+        `;
+        settingsCont.append(groupSizeRow);
+
+        card.append(settingsCont, listCont, addBtn, startBtn);
+        app.append(card);
+
+        let players = []; // Temporary list for setup
+
+        function refreshPlayerList() {
+            listCont.innerHTML = '';
+            players.forEach((p, i) => {
+                const row = div('div', 'player-row');
+                const dot = div('div', 'player-color');
+                dot.style.background = p.color;
+                dot.onclick = () => { p.color = randomColor(); dot.style.background = p.color; inpColor.value = p.color; };
+
+                const inpName = document.createElement('input');
+                inpName.placeholder = 'Name';
+                inpName.className = 'player-input';
+                inpName.value = p.name;
+                inpName.oninput = e => p.name = e.target.value;
+
+                const inpColor = document.createElement('input');
+                inpColor.type = 'color';
+                inpColor.value = p.color;
+                inpColor.oninput = e => { p.color = e.target.value; dot.style.background = p.color; };
+
+                const del = btn('x', 'secondary');
+                del.onclick = () => { players.splice(i, 1); refreshPlayerList(); };
+                row.append(dot, inpName, inpColor, del);
+                listCont.append(row);
+            });
+        }
+
+        addBtn.onclick = () => {
+            players.push({ id: 'P' + Date.now() + players.length, name: '', color: randomColor() }); // Simplified player object for setup
+            refreshPlayerList();
+        };
+
+        startBtn.onclick = () => {
+            const cleanPlayers = players.filter(p => p.name.trim());
+            const maxGroupSize = parseInt(document.getElementById('maxGroupSizeInput').value, 10);
+
+            if (cleanPlayers.length < 2) { alert('Need at least 2 players'); return; }
+            if (isNaN(maxGroupSize) || maxGroupSize < 2) { alert('Max players per group must be at least 2'); return; }
+            if (cleanPlayers.length < maxGroupSize && cleanPlayers.length > 1) {
+                 if (!confirm(`You have fewer players (${cleanPlayers.length}) than the group size (${maxGroupSize}). Continue with a single group?`)) return;
+            }
+
+            startTournament(cleanPlayers, maxGroupSize);
+        };
+        refreshPlayerList();
+    }
+
+    function startTournament(initialPlayers, maxGroupSize) { /* ... unchanged group creation logic ... */
+        shuffle(initialPlayers);
+        const groupsData = [];
+        for (let i = 0; i < initialPlayers.length; i += maxGroupSize) {
+            groupsData.push(initialPlayers.slice(i, i + maxGroupSize));
+        }
+        if (groupsData.length > 1 && groupsData[groupsData.length - 1].length < 2) {
+            const lastGroup = groupsData.pop();
+            lastGroup.forEach((player, index) => groupsData[index % groupsData.length].push(player));
+        }
+
+        const finalGroups = groupsData.map((groupPlayers, index) => {
+            const playersInGroup = groupPlayers.map(p => ({
+                ...p, points: 0, played: 0, wins: 0, draws: 0, losses: 0, goalsFor: 0, goalsAgainst: 0
+            }));
+            return {
+                id: index + 1, players: playersInGroup, matches: generateMatches(playersInGroup),
+                currentMatchIdx: 0, isComplete: false, lastMatch: null
+            };
+        });
+        finalGroups.forEach(group => shuffle(group.matches));
+
+        state = {
+            phase: 'group', groups: finalGroups, currentGroupIdx: 0,
+            // Playoff related state initialized later
+            playoffQualifiers: [], playoffRounds: [], currentPlayoffRoundIdx: -1, currentPlayoffMatchIdx: -1, champion: null
+        };
+        saveState();
+        render();
+    }
+
+    // --- Phase 2: Group Stage ---
+    function renderGroupStage(app) { /* ... mostly unchanged, calls finishGroupStage ... */
+        let currentGroup = state.groups[state.currentGroupIdx];
+
+        // Auto-advance finished groups
+        while (currentGroup && currentGroup.isComplete) {
+            state.currentGroupIdx++;
+            if (state.currentGroupIdx >= state.groups.length) {
+                finishGroupStage(); // Transition to next phase
+                return; // finishGroupStage handles state change & re-render
+            }
+            currentGroup = state.groups[state.currentGroupIdx];
+        }
+
+        if (!currentGroup) { /* ... error handling ... */
+             console.error("Error: No active group found."); clearState(); render(); return;
+        }
+
+        // --- Render current group match UI (Card, Title, Inputs, Button) ---
+        const card = div('div', 'card');
+        const groupTitle = div('h2', 'group-title', `Group ${currentGroup.id} - Match ${currentGroup.currentMatchIdx + 1}/${currentGroup.matches.length}`);
+        card.append(groupTitle);
+
+        const match = currentGroup.matches[currentGroup.currentMatchIdx];
+        const p1 = currentGroup.players[match.p1Idx];
+        const p2 = currentGroup.players[match.p2Idx];
+
+        // Match Input Area
+        const matchInputArea = div('div', 'match-input-area');
+        const p1Box = playerBox(p1);
+        const score1Input = document.createElement('input');
+        score1Input.type = 'number'; score1Input.min = '0'; score1Input.id = `p1_score_${match.p1Idx}`; score1Input.setAttribute('aria-label', `${p1.name} score`);
+        p1Box.append(score1Input);
+
+        const p2Box = playerBox(p2);
+        const score2Input = document.createElement('input');
+        score2Input.type = 'number'; score2Input.min = '0'; score2Input.id = `p2_score_${match.p2Idx}`; score2Input.setAttribute('aria-label', `${p2.name} score`);
+        p2Box.append(score2Input);
+
+        matchInputArea.append(p1Box, div('div', 'vs-label', 'VS'), p2Box);
+        card.append(matchInputArea);
+
+        // Record Button
+        const recordBtn = btn(`Record Score`);
+        recordBtn.style.cssText = 'display: block; margin: 0 auto;'; // Centering
+        recordBtn.onclick = () => {
+            const score1 = parseInt(score1Input.value, 10);
+            const score2 = parseInt(score2Input.value, 10);
+            if (isNaN(score1) || isNaN(score2) || score1 < 0 || score2 < 0) {
+                alert('Please enter valid scores (non-negative numbers) for both players.'); return;
+            }
+            recordScore(currentGroup, match.p1Idx, match.p2Idx, score1, score2);
+        };
+        card.append(recordBtn);
+
+        // Last match & Reset button
+        if (currentGroup.lastMatch) { /* ... unchanged ... */
+             const { p1Name, p2Name, score } = currentGroup.lastMatch;
+             card.append(div('div', 'last-match', `Last Match: ${p1Name} ${score[0]} - ${score[1]} ${p2Name}`));
+        }
+        const reset = btn('New Tournament', 'secondary'); /* ... unchanged ... */
+        reset.onclick = () => { if (confirm('Start over?')) { clearState(); render(); } };
+        card.append(reset);
+
+        app.append(card);
+        renderGroupStandings(app, currentGroup); // Show current group standings
+    }
+
+    function recordScore(group, p1Idx, p2Idx, score1, score2) { /* ... unchanged calculation logic ... */
+        const p1 = group.players[p1Idx]; const p2 = group.players[p2Idx];
+        p1.played++; p2.played++;
+        p1.goalsFor += score1; p1.goalsAgainst += score2;
+        p2.goalsFor += score2; p2.goalsAgainst += score1;
+        if (score1 > score2) { p1.wins++; p1.points += 3; p2.losses++; }
+        else if (score2 > score1) { p2.wins++; p2.points += 3; p1.losses++; }
+        else { p1.draws++; p1.points += 1; p2.draws++; p2.points += 1; }
+        group.matches[group.currentMatchIdx].score = [score1, score2];
+        group.lastMatch = { p1Name: p1.name, p2Name: p2.name, score: [score1, score2] };
+        group.currentMatchIdx++;
+        if (group.currentMatchIdx >= group.matches.length) { group.isComplete = true; }
+        saveState();
+        render();
+    }
+
+    function renderGroupStandings(app, group) { /* ... unchanged ... */
+        const st = div('div', 'card standings');
+        const groupTitle = div('h3', '', `Group ${group.id} Standings`);
+        st.append(groupTitle);
+        const table = document.createElement('table');
+        table.innerHTML = `<thead><tr><th class="player-name-col">Player</th><th>Pts</th><th>Pld</th><th>W</th><th>D</th><th>L</th><th>GF</th><th>GA</th><th>GD</th></tr></thead>`;
+        const tbody = document.createElement('tbody');
+        const sortedPlayers = [...group.players].sort(comparePlayers);
+        sortedPlayers.forEach(p => {
+            const tr = document.createElement('tr');
+            const gd = p.goalsFor - p.goalsAgainst;
+            tr.innerHTML = `<td class="player-name-col"><span style="color:${p.color}">${p.name}</span></td><td>${p.points}</td><td>${p.played}</td><td>${p.wins}</td><td>${p.draws}</td><td>${p.losses}</td><td>${p.goalsFor}</td><td>${p.goalsAgainst}</td><td>${gd > 0 ? '+' : ''}${gd}</td>`;
+            tbody.append(tr);
+        });
+        table.append(tbody); st.append(table); app.append(st);
+    }
+
+    // --- Phase 3: Transition & Playoff Setup ---
+    function finishGroupStage() {
+        console.log("Finishing group stage...");
+        state.phase = 'playoff_selection'; // Mark transition
+
+        let groupWinners = [];
+        let allRunnersUp = [];
+        let addedRunnerUp = null; // Keep track if we added one
+
+        state.groups.forEach(group => {
+            const sortedPlayers = [...group.players].sort(comparePlayers);
+            if (sortedPlayers.length > 0) {
+                groupWinners.push({...sortedPlayers[0], sourceGroup: group.id});
+                if (sortedPlayers.length > 1) {
+                     allRunnersUp.push({...sortedPlayers[1], sourceGroup: group.id});
+                }
+            }
+        });
+
+        let playoffQualifiers = [...groupWinners];
+
+        if (groupWinners.length % 2 !== 0 && allRunnersUp.length > 0) {
+             console.log("Odd number of winners, selecting best runner-up...");
+             allRunnersUp.sort(comparePlayers); // Sort runners-up by same criteria
+             const bestRunnerUp = allRunnersUp[0];
+             if (!playoffQualifiers.some(p => p.id === bestRunnerUp.id)) {
+                playoffQualifiers.push(bestRunnerUp);
+                addedRunnerUp = bestRunnerUp; // Remember the added runner-up
+                console.log(`Added runner-up: ${bestRunnerUp.name}`);
+             } else {
+                 // Handle case where best RU is already a winner (unlikely with copies)
+                 // Or add the next best if needed and available
+                 console.log("Best runner-up already qualified or unavailable.");
+             }
+        }
+
+        state.playoffQualifiers = playoffQualifiers;
+        startPlayoffs(groupWinners, addedRunnerUp); // Pass original winners and the added RU
+
+        // Don't save state here, startPlayoffs will do it after setting up rounds
+        render(); // Re-render to show selection/viz and first playoff match
+    }
+
+    function startPlayoffs(groupWinners, addedRunnerUp) {
+        console.log("Starting playoffs...");
+        const qualifiers = [...state.playoffQualifiers]; // Use the final list
+        shuffle(qualifiers); // Shuffle initially
+
+        const firstRoundMatches = [];
+        let remainingQualifiers = [...qualifiers];
+
+        if (addedRunnerUp && groupWinners.length > 0) {
+            // Find the best group winner
+             const sortedWinners = [...groupWinners].sort(comparePlayers);
+             const bestWinner = sortedWinners[0];
+
+             // Find the actual bestWinner and addedRunnerUp objects in the shuffled remainingQualifiers list
+            const bestWinnerIdx = remainingQualifiers.findIndex(p => p.id === bestWinner.id);
+            const runnerUpIdx = remainingQualifiers.findIndex(p => p.id === addedRunnerUp.id);
+
+            if (bestWinnerIdx !== -1 && runnerUpIdx !== -1) {
+                 // Create the seeded match
+                 const p1 = remainingQualifiers.splice(bestWinnerIdx, 1)[0];
+                 // Adjust index if runnerUpIdx was after bestWinnerIdx
+                 const adjustedRunnerUpIdx = (runnerUpIdx > bestWinnerIdx) ? runnerUpIdx - 1 : runnerUpIdx;
+                 const p2 = remainingQualifiers.splice(adjustedRunnerUpIdx, 1)[0];
+
+                 firstRoundMatches.push({ p1: p1, p2: p2, score: null, winner: null, roundIdx: 0, matchIdx: 0 });
+                 console.log(`Seeded match: ${p1.name} vs ${p2.name}`);
+            } else {
+                 console.warn("Could not find best winner or runner-up for seeding. Proceeding with full random.");
+                 // If seeding fails, fall back to random pairing for all below
+            }
+        } else {
+             console.log("No runner-up added or no winners, proceeding with random pairing.");
+        }
+
+
+        // Pair the rest randomly
+        let matchCounter = firstRoundMatches.length; // Start counting from existing matches
+        while (remainingQualifiers.length >= 2) {
+            const p1 = remainingQualifiers.pop();
+            const p2 = remainingQualifiers.pop();
+             firstRoundMatches.push({ p1: p1, p2: p2, score: null, winner: null, roundIdx: 0, matchIdx: matchCounter++ });
+             console.log(`Random match: ${p1.name} vs ${p2.name}`);
+        }
+
+        if (remainingQualifiers.length === 1) {
+             // Handle Bye - this shouldn't happen if qualifier logic works
+             console.error("Error: Odd number of players for playoffs after seeding/pairing!");
+             // Simple fix: just add the remaining player to the next round automatically? Or error out.
+             // For now, let's assume the logic ensures even numbers.
+        }
+
+        state.playoffRounds = [firstRoundMatches]; // Initialize rounds
+        state.phase = 'playoff';
+        state.currentPlayoffRoundIdx = 0;
+        state.currentPlayoffMatchIdx = 0;
+        saveState();
+    }
+
+    // --- Phase 4: Playoff Stage ---
+    function renderPlayoffs(app) {
+        const roundIdx = state.currentPlayoffRoundIdx;
+        const matchIdx = state.currentPlayoffMatchIdx;
+
+        if (roundIdx < 0 || roundIdx >= state.playoffRounds.length || matchIdx >= state.playoffRounds[roundIdx].length) {
+            console.error("Invalid playoff state", state);
+            // Attempt recovery or indicate error
+            // Maybe check if tournament should be finished?
+            if(roundIdx > 0 && state.playoffRounds[roundIdx-1] && state.playoffRounds[roundIdx-1].length === 1 && state.playoffRounds[roundIdx-1][0].winner) {
+                 finishTournament(state.playoffRounds[roundIdx-1][0].winner);
+                 return;
+            }
+            app.append(div('div', 'card', 'Error in playoff state. Cannot display match.'));
+            const reset = btn('New Tournament', 'secondary');
+            reset.onclick = () => { clearState(); render(); };
+            app.append(reset);
+            return;
+        }
+
+
+        const currentRound = state.playoffRounds[roundIdx];
+        const match = currentRound[matchIdx];
+        const { p1, p2 } = match;
+
+        const card = div('div', 'card');
+        const roundNum = roundIdx + 1;
+        const totalMatchesInRound = currentRound.length;
+        const isFinal = totalMatchesInRound === 1 && roundNum > 1; // Check if it's the final
+        const titleText = isFinal ? 'Final' : `Playoffs - Round ${roundNum} - Match ${matchIdx + 1}/${totalMatchesInRound}`;
+        const title = div('h2', 'section-title', titleText);
+        card.append(title);
+
+        // --- Match Input Area ---
+        const matchInputArea = div('div', 'match-input-area');
+        const p1Box = playerBox(p1);
+        const score1Input = document.createElement('input');
+        score1Input.type = 'number'; score1Input.min = '0'; score1Input.id = `p1_score_${p1.id}`; score1Input.setAttribute('aria-label', `${p1.name} score`);
+        p1Box.append(score1Input);
+
+        const p2Box = playerBox(p2);
+        const score2Input = document.createElement('input');
+        score2Input.type = 'number'; score2Input.min = '0'; score2Input.id = `p2_score_${p2.id}`; score2Input.setAttribute('aria-label', `${p2.name} score`);
+        p2Box.append(score2Input);
+
+        matchInputArea.append(p1Box, div('div', 'vs-label', 'VS'), p2Box);
+        card.append(matchInputArea);
+
+        // Record Score Button
+        const recordBtn = btn(`Record Score`);
+        recordBtn.style.cssText = 'display: block; margin: 0 auto;';
+        recordBtn.onclick = () => {
+            const score1 = parseInt(score1Input.value, 10);
+            const score2 = parseInt(score2Input.value, 10);
+
+            if (isNaN(score1) || isNaN(score2) || score1 < 0 || score2 < 0) {
+                alert('Please enter valid scores (non-negative numbers) for both players.'); return;
+            }
+            if (score1 === score2) {
+                 alert('Draws are not allowed in playoffs! Please determine a winner (e.g., replay, penalties).'); return;
+            }
+            recordPlayoffScore(roundIdx, matchIdx, score1, score2);
+        };
+        card.append(recordBtn);
+        // --- End Match Input Area ---
+
+
+        const reset = btn('New Tournament', 'secondary');
+        reset.onclick = () => { if (confirm('Start over?')) { clearState(); render(); } };
+        card.append(reset);
+
+        app.append(card);
+
+        // Display bracket visualization (simple text-based for now)
+        renderBracket(app);
+    }
+
+     function recordPlayoffScore(roundIdx, matchIdx, score1, score2) {
+         const match = state.playoffRounds[roundIdx][matchIdx];
+         match.score = [score1, score2];
+         match.winner = (score1 > score2) ? match.p1 : match.p2; // Store the winner object
+         console.log(`Round ${roundIdx+1}, Match ${matchIdx+1}: ${match.p1.name} ${score1} - ${score2} ${match.p2.name}. Winner: ${match.winner.name}`);
+
+
+         // Advance to next match or next round
+         const currentRound = state.playoffRounds[roundIdx];
+         state.currentPlayoffMatchIdx++;
+
+         if (state.currentPlayoffMatchIdx >= currentRound.length) {
+             // Current round finished, generate next round
+             const winners = currentRound.map(m => m.winner).filter(Boolean); // Get winners of this round
+
+             if (winners.length === 1) {
+                 // Tournament finished!
+                 finishTournament(winners[0]);
+                 return; // finishTournament handles state change & re-render
+             } else if (winners.length > 1) {
+                 generateNextRound(winners);
+                 state.currentPlayoffRoundIdx++;
+                 state.currentPlayoffMatchIdx = 0;
+             } else {
+                 // Should not happen if draws are disallowed
+                 console.error("Error: No winners found after playoff round.");
+             }
+         }
+
+         saveState();
+         render();
+     }
+
+    function generateNextRound(winners) {
+        console.log(`Generating round ${state.currentPlayoffRoundIdx + 2} with winners:`, winners.map(w=>w.name));
+        const nextRoundMatches = [];
+        const remainingWinners = [...winners];
+        shuffle(remainingWinners); // Randomize pairings for next round
+
+        let matchCounter = 0;
+        while (remainingWinners.length >= 2) {
+            const p1 = remainingWinners.pop();
+            const p2 = remainingWinners.pop();
+             nextRoundMatches.push({ p1: p1, p2: p2, score: null, winner: null, roundIdx: state.currentPlayoffRoundIdx + 1, matchIdx: matchCounter++ });
+        }
+        state.playoffRounds.push(nextRoundMatches);
+        // state update (round/match index) happens in recordPlayoffScore
+    }
+
+     function renderBracket(app) {
+        const bracketContainer = div('div', 'card playoff-bracket');
+        bracketContainer.append(div('h3', 'section-title', 'Playoff Bracket'));
+
+        state.playoffRounds.forEach((round, roundIndex) => {
+            const roundDiv = div('div', 'playoff-round');
+            roundDiv.append(div('h4', '', `Round ${roundIndex + 1}`));
+
+            round.forEach(match => {
+                const matchDiv = div('div', 'playoff-match');
+                const p1Box = playerBox(match.p1);
+                const p2Box = playerBox(match.p2);
+                const scoreDiv = div('div', 'match-score');
+
+                if (match.score !== null) {
+                     scoreDiv.textContent = `${match.score[0]} - ${match.score[1]}`;
+                     // Highlight winner/loser visually
+                     if (match.winner) {
+                          if (match.winner.id === match.p1.id) {
+                               p1Box.querySelector('.pname').classList.add('winner');
+                               p2Box.querySelector('.pname').classList.add('loser');
+                          } else {
+                               p2Box.querySelector('.pname').classList.add('winner');
+                               p1Box.querySelector('.pname').classList.add('loser');
+                          }
+                     }
+                } else {
+                    scoreDiv.textContent = 'vs';
+                }
+
+                matchDiv.append(p1Box, scoreDiv, p2Box);
+                roundDiv.append(matchDiv);
+            });
+            bracketContainer.append(roundDiv);
+        });
+        app.append(bracketContainer);
+    }
+
+    // --- Phase 5: Tournament End ---
+    function finishTournament(champion) {
+        console.log("Tournament Finished! Champion:", champion.name);
+        state.phase = 'completed';
+        state.champion = champion;
+        saveState();
+        render();
+    }
+
+    function renderChampion(app) {
+        const card = div('div', 'card champion-box');
+        card.append(div('h2', 'section-title', 'Tournament Champion!'));
+
+        if (state.champion) {
+             const champBox = playerBox(state.champion);
+             // Make champion display bigger
+             champBox.querySelector('.player-color').style.width = '80px';
+             champBox.querySelector('.player-color').style.height = '80px';
+              champBox.querySelector('.pname').style.fontSize = '2rem'; // Larger name
+              champBox.querySelector('.pname').style.fontWeight = 'bold';
+             card.append(champBox);
+        } else {
+            card.append(div('p', '', 'Error: Champion data not found.'));
+        }
+
+        const restart = btn('New Tournament');
+        restart.onclick = () => { clearState(); render(); };
+        card.append(restart);
+        app.append(card);
+
+        // Optionally show final bracket and group standings again
+        renderBracket(app);
+        state.groups.forEach(group => renderGroupStandings(app, group));
+    }
+
+    // --- Helper Functions ---
+    function comparePlayers(a, b) { /* ... unchanged ... */
+        const gdA = a.goalsFor - a.goalsAgainst; const gdB = b.goalsFor - b.goalsAgainst;
+        if (b.points !== a.points) return b.points - a.points;
+        if (gdB !== gdA) return gdB - gdA;
+        if (b.goalsFor !== a.goalsFor) return b.goalsFor - a.goalsFor;
+        return a.name.localeCompare(b.name);
+    }
+    function shuffle(a) { /* ... unchanged ... */
+        for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1));[a[i], a[j]] = [a[j], a[i]]; }
+    }
+    function div(tag, cls = '', text = '') { /* ... unchanged ... */
+        const d = document.createElement(tag); if (cls) d.className = cls; if (text) d.textContent = text; return d;
+    }
+    function btn(text, cls = '') { /* ... unchanged ... */
+        const b = document.createElement('button'); b.textContent = text; if (cls) b.className = cls; return b;
+    }
+    function playerBox(p) { /* ... unchanged ... */
+        const box = div('div', 'p-box'); const dot = div('div', 'player-color'); dot.style.background = p.color;
+        const nm = div('div', 'pname', p.name); box.append(dot, nm); return box;
+    }
+    function randomColor() { /* ... unchanged ... */
+        return '#' + Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0');
+    }
+     function generateMatches(groupPlayers) { /* ... unchanged ... */
+        const matches = []; const playerIndices = groupPlayers.map((_, index) => index);
+        for (let i = 0; i < playerIndices.length; i++) {
+            for (let j = i + 1; j < playerIndices.length; j++) {
+                matches.push({ p1Idx: playerIndices[i], p2Idx: playerIndices[j], score: null });
+            }
+        } return matches;
+    }
+    function renderPlayoffSelection(app) { /* ... kept for review if needed ... */
+        const card = div('div', 'card');
+        card.append(div('h2', 'group-title', 'Playoff Qualifiers Determined'));
+        if (!state.playoffQualifiers || state.playoffQualifiers.length === 0) {
+             card.append(div('p', '', 'No players qualified.'));
+        } else {
+             const qualifierList = div('div'); /* ... display list ... */
+             qualifierList.style.display = 'flex'; qualifierList.style.flexWrap = 'wrap'; qualifierList.style.justifyContent = 'center';
+             state.playoffQualifiers.forEach(p => { const box = playerBox(p); box.style.margin = '0.5rem'; qualifierList.append(box); });
+             card.append(qualifierList);
+        }
+        app.append(card);
+        // Visualization Placeholder
+        const vizContainer = div('div', 'visualization card');
+        vizContainer.append(div('h3', 'group-title', 'Advancement Visualization'));
+        const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        svg.setAttribute('viewBox', '0 0 300 150');
+        vizContainer.append(svg);
+        app.append(vizContainer);
+        renderBasicVisualization(svg, state.playoffQualifiers);
+    }
+     function renderBasicVisualization(svgElement, qualifiers) { /* ... unchanged ... */
+        svgElement.innerHTML = ''; if (!qualifiers || qualifiers.length === 0) return;
+        const width = 300; const height = 150; const nodeRadius = 8; const padding = 20; const targetY = height - padding - 15; const targetX = width / 2;
+        const playoffText = document.createElementNS('http://www.w3.org/2000/svg', 'text'); playoffText.setAttribute('x', targetX); playoffText.setAttribute('y', targetY + 10); playoffText.setAttribute('class', 'playoff-area-text'); playoffText.textContent = 'Playoffs'; svgElement.appendChild(playoffText);
+        const numQualifiers = qualifiers.length;
+        qualifiers.forEach((player, index) => {
+            const angle = (Math.PI * (index + 0.5)) / numQualifiers; const startX = targetX + (width / 2 - padding * 2) * Math.cos(angle - Math.PI / 2); const startY = (height / 2) - (height / 3) * Math.sin(angle - Math.PI / 2);
+            const line = document.createElementNS('http://www.w3.org/2000/svg', 'line'); line.setAttribute('x1', startX); line.setAttribute('y1', startY); line.setAttribute('x2', targetX); line.setAttribute('y2', targetY); line.setAttribute('class', 'qualifier-line'); svgElement.appendChild(line);
+            const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle'); circle.setAttribute('cx', startX); circle.setAttribute('cy', startY); circle.setAttribute('r', nodeRadius); circle.setAttribute('fill', player.color); circle.setAttribute('stroke', '#fff'); circle.setAttribute('stroke-width', '1'); svgElement.appendChild(circle);
+            const text = document.createElementNS('http://www.w3.org/2000/svg', 'text'); text.setAttribute('x', startX); text.setAttribute('y', startY - nodeRadius - 2); text.setAttribute('class', 'qualifier-text'); text.textContent = player.name; svgElement.appendChild(text);
+        });
+     }
+
+})();
+</script>
+
+</body>
+</html>
