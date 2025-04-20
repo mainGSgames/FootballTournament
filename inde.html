@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Sega Football Stream Overlay v2</title>
+    <title>Sega Football Stream Overlay v2 - Fixed</title>
     <style>
         :root {
             --accent: #10b981; /* Emerald green */
             --bg: #0f172a; /* Fallback bg if camera fails */
             --fg: #f8fafc; /* Slate light */
             --card: #1e293b; /* For setup screens */
-            --overlay-bg: rgba(15, 23, 42, 0.75); /* Slightly more opaque */
+            --overlay-bg: rgba(15, 23, 42, 0.8); /* Slightly more opaque */
             --player1-color: #3b82f6; /* Blue */
             --player2-color: #ef4444; /* Red */
             --timer-color: #f59e0b; /* Amber */
@@ -33,7 +33,7 @@
 
         /* --- Setup/Non-Stream Views (mostly unchanged) --- */
         #app { width: 100%; height: 100%; display: none; flex-direction: column; align-items: center; justify-content: center; padding: 1rem; }
-        .card { background: var(--card); padding: clamp(0.5rem, 2vw, 1rem); border-radius: 1rem; margin-bottom: 1rem; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); max-width: 700px; width: 90%; overflow-y: auto; max-height: 85vh; }
+        .card { background: var(--card); padding: clamp(1rem, 3vw, 1.5rem); border-radius: 1rem; margin-bottom: 1rem; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); max-width: 700px; width: 90%; overflow-y: auto; max-height: 85vh; }
         .player-row { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem; }
         .player-color-static { width: 32px; height: 32px; border-radius: 50%; border: 2px solid #fff; flex-shrink: 0; cursor: pointer; }
         .player-input { flex-grow: 1; background-color: var(--input-bg); color: var(--fg); border: 1px solid var(--border-color); padding: 0.5rem; border-radius: 0.3rem; font-size: var(--font-size-small);}
@@ -45,7 +45,7 @@
         .group-title, .section-title { font-size: var(--font-size-medium); margin-bottom: 0.75rem; color: var(--accent); border-bottom: 1px solid var(--accent); padding-bottom: 0.3rem; }
         /* --- Standings/Bracket (unchanged) --- */
         .standings { margin-top: 1rem; font-size: var(--font-size-small); overflow-x: auto; } .standings table { width: 100%; border-collapse: collapse; margin-top: 0.5rem; } .standings th, .standings td { padding: 0.4rem 0.2rem; text-align: center; white-space: nowrap; } .standings tr:nth-child(even) { background: #334155; } .standings th { background: var(--accent); color: var(--bg); font-weight: bold; } .standings .player-name-col { text-align: left; padding-left: 0.5rem; }
-        .playoff-bracket { margin-top: 1rem; } .playoff-round { margin-bottom: 1rem; border-left: 2px solid var(--border-color); padding-left: 1rem;} .playoff-match { display: flex; justify-content: space-between; align-items: center; padding: 0.3rem 0.5rem; border-bottom: 1px dashed var(--border-color); } .playoff-match .p-box { flex-basis: 40%; } .playoff-match .p-box .pname { font-size: var(--font-size-small); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;} .playoff-match .player-color-static { width: 20px; height: 20px; border-width: 1px;} .playoff-match .match-score { font-weight: bold; font-size: var(--font-size-small); } .p-box .pname.winner { color: var(--win-color); font-weight: bold;} .p-box .pname.loser { text-decoration: line-through; opacity: 0.7;}
+        .playoff-bracket { margin-top: 1rem; } .playoff-round { margin-bottom: 1rem; border-left: 2px solid var(--border-color); padding-left: 1rem;} .playoff-match { display: flex; justify-content: space-between; align-items: center; padding: 0.3rem 0.5rem; border-bottom: 1px dashed var(--border-color); } .playoff-match .p-box { flex-basis: 40%; display: flex; align-items: center; gap: 0.3rem; } .playoff-match .p-box .pname { font-size: var(--font-size-small); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;} .playoff-match .player-color-static { width: 20px; height: 20px; border-width: 1px; flex-shrink: 0;} .playoff-match .match-score { font-weight: bold; font-size: var(--font-size-small); } .p-box .pname.winner { color: var(--win-color); font-weight: bold;} .p-box .pname.loser { text-decoration: line-through; opacity: 0.7;}
         .champion-box { text-align: center; padding: 2rem; } .champion-box .player-name { font-size: calc(var(--font-size-large) * 1.1); color: var(--win-color); } .champion-box .player-color-static { width: clamp(60px, 15vh, 80px); height: clamp(60px, 15vh, 80px); margin: 0 auto 0.5rem auto; }
         .visualization { margin-top: 1rem; width: 100%; } .visualization svg { width: 100%; min-height: 150px; max-height: 30vh; background: var(--bg); border-radius: 0.5rem; border: 1px solid var(--card); } .qualifier-node { fill: var(--accent); } .qualifier-text { fill: var(--fg); font-size: 0.7rem; text-anchor: middle; } .qualifier-line { stroke: var(--fg); stroke-width: 1; opacity: 0.5; } .playoff-area-text { fill: var(--fg); font-size: 0.9rem; text-anchor: middle; font-weight: bold; }
 
@@ -56,21 +56,21 @@
         #overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 2; display: flex; flex-direction: column; pointer-events: none; padding: clamp(5px, 1vh, 10px); /* Reduced padding */ }
 
         /* Overlay Layout - Top, Spacer, Bottom */
-        .overlay-top { display: flex; justify-content: space-between; /* Space out items */ align-items: center; padding: 0.3em 0.8em; background: var(--overlay-bg); border-radius: 0.5rem; pointer-events: auto; flex-shrink: 0; order: 1; /* Top */ }
+        .overlay-top { display: flex; justify-content: space-between; align-items: center; padding: 0.3em 0.8em; background: var(--overlay-bg); border-radius: 0.5rem; pointer-events: auto; flex-shrink: 0; order: 1; /* Top */ }
         .overlay-spacer { flex-grow: 1; order: 2; /* Middle */ }
-        .overlay-bottom { display: flex; flex-direction: column; /* Stack ticker and player bar */ align-items: center; order: 3; /* Bottom */ pointer-events: auto; flex-shrink: 0; width: 100%; }
+        .overlay-bottom { display: flex; flex-direction: column; align-items: center; order: 3; /* Bottom */ pointer-events: auto; flex-shrink: 0; width: 100%; }
 
         /* Top Bar Components */
-        .match-info { font-size: var(--font-size-small); text-align: center; color: #ccc; flex-grow: 1; /* Allow text to take space */ margin: 0 1rem; }
-        .timer-controls { display: flex; align-items: center; gap: 0.5rem;} /* Group timer and pause */
+        .match-info { font-size: var(--font-size-small); text-align: center; color: #ccc; flex-grow: 1; margin: 0 1rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .timer-controls { display: flex; align-items: center; gap: 0.5rem;}
         .timer { font-size: var(--font-size-large); font-weight: bold; color: var(--timer-color); text-align: right; }
         .timer.paused { opacity: 0.6; }
         .pause-resume-button { width: calc(var(--button-size)*0.8); height: calc(var(--button-size)*0.8); font-size: calc(var(--button-size) * 0.4); } /* Smaller pause */
 
         /* Bottom Area Components */
         #previous-match-ticker {
-            width: 80%; /* Or adjust as needed */
-            background: rgba(0, 0, 0, 0.6);
+            width: 80%; /* Adjust as needed */
+            background: rgba(15, 23, 42, 0.6); /* --overlay-bg but slightly less opaque */
             color: #eee;
             font-size: var(--font-size-small);
             padding: 0.3em 0.6em;
@@ -81,41 +81,51 @@
             overflow: hidden;
             text-overflow: ellipsis;
             opacity: 0; /* Hidden by default */
-            transition: opacity 0.5s ease-in-out;
+            /* Transition applied via animation */
         }
-        #previous-match-ticker.visible { opacity: 1; }
 
         .player-bar { display: flex; justify-content: space-between; align-items: center; width: 100%; background: var(--overlay-bg); border-radius: 0.5rem; padding: clamp(3px, 0.8vh, 8px) clamp(8px, 1.5vw, 15px); }
         .player-info { display: flex; align-items: center; gap: clamp(5px, 1.5vw, 15px); flex-basis: 48%; /* Adjust space */ }
-        .player-info.player2 { flex-direction: row-reverse; /* Right align P2 */ } /* Reverse order for P2 */
+        .player-info.player2 { flex-direction: row-reverse; /* Right align P2 name/score */ }
         .player-name { font-size: var(--font-size-medium); font-weight: bold; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .player-score { font-size: var(--font-size-large); font-weight: bold; margin: 0 clamp(5px, 1vw, 10px); }
         .goal-button { background-color: var(--accent); flex-shrink: 0; }
          /* Player name color applied via JS */
 
-        #exit-stream-button { position: fixed; bottom: 10px; right: 10px; z-index: 10; opacity: 0.7; } /* Corner exit button */
+        /* --- FIX: Moved Exit Button to bottom-left --- */
+        #exit-stream-button {
+            position: fixed;
+            bottom: 10px;
+            left: 10px; /* Changed from right */
+            z-index: 10;
+            opacity: 0.7;
+            pointer-events: auto; /* Ensure it's clickable */
+        }
+        #exit-stream-button:hover { opacity: 1; }
 
-         /* Animation for ticker */
-         @keyframes fadeInOut {
-           0% { opacity: 0; }
-           20% { opacity: 1; } /* Fade in quick */
-           80% { opacity: 1; } /* Stay visible */
-           100% { opacity: 0; } /* Fade out */
-         }
 
-         #previous-match-ticker.animate {
-           animation: fadeInOut 7s ease-in-out forwards; /* Adjust duration */
-         }
+        /* --- Animation for ticker --- */
+        @keyframes fadeInOut {
+          0% { opacity: 0; transform: translateY(5px); }
+          15% { opacity: 1; transform: translateY(0); } /* Fade in quicker */
+          85% { opacity: 1; transform: translateY(0); } /* Stay visible longer */
+          100% { opacity: 0; transform: translateY(5px); } /* Fade out */
+        }
+
+        #previous-match-ticker.animate {
+          animation: fadeInOut 7s ease-in-out forwards; /* Adjust total duration */
+        }
 
     </style>
 </head>
 <body>
     <div id="app"></div>
+
     <div id="stream-container">
         <video id="camera-feed" playsinline autoplay muted></video>
         <div id="overlay">
             <div class="overlay-top">
-                 <div id="match-info" class="match-info"></div>
+                 <div id="match-info" class="match-info">Loading...</div>
                  <div class="timer-controls">
                      <div id="timer" class="timer">00:00</div>
                      <button id="pause-resume-button" class="icon-button pause-resume-button">❚❚</button>
@@ -125,7 +135,9 @@
             <div class="overlay-spacer"></div>
 
             <div class="overlay-bottom">
-                 <div id="previous-match-ticker">Last Match: P1 2 - 1 P2</div> <div class="player-bar">
+                 <div id="previous-match-ticker"></div>
+
+                 <div class="player-bar">
                     <div class="player-info player1">
                         <button id="player1-goal-button" class="icon-button goal-button">+</button>
                         <div id="player1-score" class="player-score">0</div>
@@ -139,13 +151,13 @@
                  </div>
             </div>
 
-             <button id="exit-stream-button" class="secondary">Exit</button>
+             <button id="exit-stream-button" class="secondary icon-button">✖</button>
         </div>
     </div>
 
     <script>
     (function() {
-        const STORAGE_KEY = 'segaRR_v6_stream_layout';
+        const STORAGE_KEY = 'segaRR_v6_stream_layout_fixed'; // Updated key slightly
         let state = null;
         let timerInterval = null;
         let cameraStream = null;
@@ -155,287 +167,634 @@
         const appDiv = document.getElementById('app');
         const streamContainer = document.getElementById('stream-container');
         const cameraVideo = document.getElementById('camera-feed');
-        // Other elements cached as needed
+        // Other elements cached dynamically or via el(id) helper
 
         // --- Initialization & State ---
         init();
 
         function init() { loadState(); render(); }
 
-        function loadState() { /* ... unchanged state loading logic ... */
-            let loadedState = null; try { loadedState = JSON.parse(localStorage.getItem(STORAGE_KEY)) || null; } catch (e) { console.error("Failed to parse state:", e); loadedState = null; }
+        function loadState() {
+            let loadedState = null;
+            try {
+                loadedState = JSON.parse(localStorage.getItem(STORAGE_KEY)) || null;
+            } catch (e) {
+                console.error("Failed to parse state:", e);
+                loadedState = null;
+            }
+
+            // Ensure timerConfig exists and is valid
             let timerConfig = { durationMinutes: 5, timeRemaining: 300, isPaused: false, isActive: false };
-            if (loadedState && loadedState.timerConfig) { timerConfig.durationMinutes = parseInt(loadedState.timerConfig.durationMinutes, 10) || 5; if (!loadedState.timerConfig.isActive) { timerConfig.timeRemaining = timerConfig.durationMinutes * 60; } else { timerConfig.timeRemaining = parseInt(loadedState.timerConfig.timeRemaining, 10) || timerConfig.durationMinutes * 60; } timerConfig.isPaused = loadedState.timerConfig.isPaused || false; timerConfig.isActive = loadedState.timerConfig.isActive || false; }
-            if (loadedState) { loadedState.timerConfig = timerConfig; }
-             // Initialize last match info if needed
-             if (loadedState && !loadedState.lastCompletedMatchInfo) {
-                  loadedState.lastCompletedMatchInfo = null;
-             }
-            state = loadedState; console.log("State loaded:", JSON.parse(JSON.stringify(state || {})));
+            if (loadedState && loadedState.timerConfig) {
+                timerConfig.durationMinutes = parseInt(loadedState.timerConfig.durationMinutes, 10) || 5;
+                // If timer wasn't active, reset remaining time to full duration
+                if (!loadedState.timerConfig.isActive) {
+                     timerConfig.timeRemaining = timerConfig.durationMinutes * 60;
+                } else {
+                     // Otherwise, load remaining time, default to full duration if invalid
+                     timerConfig.timeRemaining = parseInt(loadedState.timerConfig.timeRemaining, 10);
+                     if (isNaN(timerConfig.timeRemaining) || timerConfig.timeRemaining < 0) {
+                          timerConfig.timeRemaining = timerConfig.durationMinutes * 60;
+                     }
+                }
+                timerConfig.isPaused = loadedState.timerConfig.isPaused || false;
+                timerConfig.isActive = loadedState.timerConfig.isActive || false;
+            }
+
+            if (loadedState) {
+                loadedState.timerConfig = timerConfig;
+                // Initialize last match info if it doesn't exist
+                if (!loadedState.lastCompletedMatchInfo) {
+                    loadedState.lastCompletedMatchInfo = null;
+                }
+            }
+
+            state = loadedState;
+            console.log("State loaded:", JSON.parse(JSON.stringify(state || {})));
         }
 
-        function saveState() { /* ... unchanged ... */ if (state) { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); /* console.log("State saved."); */ } else { localStorage.removeItem(STORAGE_KEY); console.log("State is null, storage cleared."); } }
-        function clearState() { localStorage.removeItem(STORAGE_KEY); state = null; stopCamera(); stopTimer(); stopTicker(); console.log("State cleared."); }
+        function saveState() {
+            if (state) {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+                // console.log("State saved.");
+            } else {
+                localStorage.removeItem(STORAGE_KEY);
+                console.log("State is null, storage cleared.");
+            }
+        }
+        function clearState() {
+             stopTicker(); // Stop ticker before clearing state
+             stopTimer();
+             stopCamera();
+             localStorage.removeItem(STORAGE_KEY);
+             state = null;
+             console.log("State cleared.");
+        }
 
         // --- Camera Handling ---
-        async function setupCamera() { /* ... unchanged ... */ if (cameraStream) return; if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) { console.warn("getUserMedia not supported"); return; } try { const constraints = { video: { facingMode: "environment" }, audio: false }; cameraStream = await navigator.mediaDevices.getUserMedia(constraints); cameraVideo.srcObject = cameraStream; console.log("Camera stream started."); } catch (err) { console.error("Error accessing camera:", err); cameraVideo.style.backgroundColor = '#222'; } }
-        function stopCamera() { /* ... unchanged ... */ if (cameraStream) { cameraStream.getTracks().forEach(track => track.stop()); cameraStream = null; cameraVideo.srcObject = null; console.log("Camera stream stopped."); } }
+        async function setupCamera() {
+            if (cameraStream) return; // Already active
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                console.warn("getUserMedia not supported");
+                cameraVideo.style.backgroundColor = '#222'; // Fallback bg
+                return;
+            }
+            try {
+                const constraints = { video: { facingMode: "environment" }, audio: false };
+                cameraStream = await navigator.mediaDevices.getUserMedia(constraints);
+                cameraVideo.srcObject = cameraStream;
+                await cameraVideo.play(); // Ensure playback starts
+                console.log("Camera stream started.");
+            } catch (err) {
+                console.error("Error accessing camera:", err);
+                cameraVideo.style.backgroundColor = '#222'; // Fallback bg on error
+            }
+         }
+        function stopCamera() {
+            if (cameraStream) {
+                cameraStream.getTracks().forEach(track => track.stop());
+                cameraStream = null;
+                cameraVideo.srcObject = null;
+                console.log("Camera stream stopped.");
+            }
+        }
 
-        // --- Timer Handling ---
-        function startTimer(durationSeconds) { /* ... unchanged ... */ stopTimer(); if (!state || !state.timerConfig) return; state.timerConfig.timeRemaining = durationSeconds; state.timerConfig.isPaused = false; state.timerConfig.isActive = true; updateTimerDisplay(); timerInterval = setInterval(() => { if (!state.timerConfig.isPaused && state.timerConfig.isActive) { state.timerConfig.timeRemaining--; updateTimerDisplay(); if (state.timerConfig.timeRemaining <= 0) { finalizeMatch(); } } }, 1000); saveState(); console.log("Timer started"); }
-        function pauseTimer() { /* ... unchanged ... */ if (timerInterval && state.timerConfig.isActive) { state.timerConfig.isPaused = true; updateTimerDisplay(); document.getElementById('pause-resume-button').textContent = '▶'; saveState(); console.log("Timer paused"); } }
-        function resumeTimer() { /* ... unchanged ... */ if (timerInterval && state.timerConfig.isActive) { state.timerConfig.isPaused = false; updateTimerDisplay(); document.getElementById('pause-resume-button').textContent = '❚❚'; saveState(); console.log("Timer resumed"); } }
-        function stopTimer() { /* ... unchanged ... */ clearInterval(timerInterval); timerInterval = null; if(state && state.timerConfig) { state.timerConfig.isActive = false; state.timerConfig.isPaused = false; saveState(); } console.log("Timer stopped"); }
-        function updateTimerDisplay() { /* ... unchanged ... */ if (!state || !state.timerConfig) return; const timerElement = document.getElementById('timer'); if (!timerElement) return; const time = Math.max(0, state.timerConfig.timeRemaining); const minutes = Math.floor(time / 60); const seconds = time % 60; timerElement.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`; timerElement.classList.toggle('paused', state.timerConfig.isPaused); }
+        // --- Timer Handling (Pause/Resume logic verified) ---
+        function startTimer(durationSeconds) {
+             stopTimer(); // Ensure no duplicate timers
+             if (!state || !state.timerConfig) return;
+             state.timerConfig.timeRemaining = durationSeconds;
+             state.timerConfig.isPaused = false;
+             state.timerConfig.isActive = true;
+             updateTimerDisplay(); // Initial display update
+             const pauseResumeBtn = el('pause-resume-button');
+             if(pauseResumeBtn) pauseResumeBtn.textContent = '❚❚'; // Set initial icon
 
-        // --- Ticker Handling ---
+             timerInterval = setInterval(() => {
+                  if (!state || !state.timerConfig) { // Safety check
+                       stopTimer();
+                       return;
+                  }
+                  if (!state.timerConfig.isPaused && state.timerConfig.isActive) {
+                       state.timerConfig.timeRemaining--;
+                       updateTimerDisplay();
+                       if (state.timerConfig.timeRemaining <= 0) {
+                            console.log("Timer reached zero, finalizing match...");
+                            finalizeMatch(); // Auto-finalize when timer ends
+                       }
+                  }
+             }, 1000);
+             saveState(); // Save state after starting
+             console.log("Timer started");
+        }
+
+        function pauseTimer() {
+            if (timerInterval && state && state.timerConfig.isActive && !state.timerConfig.isPaused) {
+                state.timerConfig.isPaused = true;
+                updateTimerDisplay(); // Update visual state (e.g., opacity)
+                const btn = el('pause-resume-button');
+                if (btn) btn.textContent = '▶'; // Update button text
+                saveState(); // Save paused state
+                console.log("Timer paused");
+            }
+        }
+
+        function resumeTimer() {
+            if (timerInterval && state && state.timerConfig.isActive && state.timerConfig.isPaused) {
+                state.timerConfig.isPaused = false;
+                updateTimerDisplay(); // Update visual state
+                const btn = el('pause-resume-button');
+                if (btn) btn.textContent = '❚❚'; // Update button text
+                saveState(); // Save resumed state
+                console.log("Timer resumed");
+            }
+        }
+
+        function stopTimer() {
+            clearInterval(timerInterval);
+            timerInterval = null;
+            if (state && state.timerConfig) {
+                // Don't reset time remaining here, just mark as inactive
+                state.timerConfig.isActive = false;
+                state.timerConfig.isPaused = false; // Ensure not stuck in paused state
+                 // No saveState() here, called by callers like finalizeMatch or clearState
+            }
+            // Reset display if needed (e.g., when exiting stream)
+             const timerElement = el('timer');
+             if(timerElement && (!state || !state.timerConfig || !state.timerConfig.isActive)) {
+                  const duration = (state && state.timerConfig) ? state.timerConfig.durationMinutes * 60 : 300;
+                  const minutes = Math.floor(duration / 60);
+                  const seconds = duration % 60;
+                  timerElement.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+                  timerElement.classList.remove('paused');
+             }
+            console.log("Timer stopped interval");
+        }
+
+        function updateTimerDisplay() {
+            if (!state || !state.timerConfig) return;
+            const timerElement = el('timer');
+            if (!timerElement) return;
+            const time = Math.max(0, state.timerConfig.timeRemaining);
+            const minutes = Math.floor(time / 60);
+            const seconds = time % 60;
+            timerElement.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+            timerElement.classList.toggle('paused', state.timerConfig.isPaused);
+        }
+
+        // --- Ticker Handling (NEW) ---
          function startTicker() {
-             stopTicker(); // Clear previous interval
+             stopTicker(); // Clear previous interval if any
              console.log("Starting previous match ticker");
-             const tickerElement = document.getElementById('previous-match-ticker');
-             if (!tickerElement) return;
+             const tickerElement = el('previous-match-ticker');
+             if (!tickerElement) { console.error("Ticker element not found"); return; }
+
+             let initialDisplay = true; // Flag to show immediately without delay
 
              const showTick = () => {
                   if (state && state.lastCompletedMatchInfo) {
                        const { p1Name, p2Name, score } = state.lastCompletedMatchInfo;
                        tickerElement.textContent = `Last: ${p1Name} ${score[0]} - ${score[1]} ${p2Name}`;
-                       tickerElement.classList.remove('animate'); // Remove previous animation class
-                       void tickerElement.offsetWidth; // Trigger reflow
-                       tickerElement.classList.add('animate'); // Add class to trigger animation
+                       // Force animation restart: remove class, trigger reflow, add class
+                       tickerElement.classList.remove('animate');
+                       void tickerElement.offsetWidth; // Trigger reflow hack
+                       tickerElement.classList.add('animate');
+                       tickerElement.style.opacity = 1; // Make sure it's visible when animating
                   } else {
                        tickerElement.textContent = ''; // Clear if no info
                        tickerElement.classList.remove('animate');
+                       tickerElement.style.opacity = 0; // Hide if no info
                   }
              };
 
-             showTick(); // Show immediately once
+             if (state && state.lastCompletedMatchInfo) {
+                showTick(); // Show immediately the first time if data exists
+                initialDisplay = false;
+             } else {
+                tickerElement.style.opacity = 0; // Ensure hidden if no data initially
+             }
+
+             // Run periodically AFTER the initial display (if any)
              tickerInterval = setInterval(showTick, 15000); // Repeat every 15 seconds
          }
 
          function stopTicker() {
               clearInterval(tickerInterval);
               tickerInterval = null;
-              const tickerElement = document.getElementById('previous-match-ticker');
+              const tickerElement = el('previous-match-ticker');
               if (tickerElement) {
                    tickerElement.classList.remove('animate');
-                   tickerElement.style.opacity = 0; // Hide it
+                   tickerElement.style.opacity = 0; // Hide it explicitly
               }
               console.log("Ticker stopped");
          }
 
-        // --- Score Handling (FIXED) ---
+        // --- Score Handling (Robustness Added) ---
         function incrementScore(playerIdentifier) {
-             // Allow score changes even if timer is paused, but not if match isn't active
-             if (!state || !state.timerConfig.isActive) {
-                  console.log("Score change prevented: Timer not active.");
+             // Allow score changes even if timer is paused, but only if match is active
+             if (!state || !state.timerConfig || !state.timerConfig.isActive) {
+                  console.log("Score change prevented: Match/Timer not active.");
                   return;
              }
 
              let match;
              let isPlayoff = state.phase === 'playoff';
 
-             try { // Add try block for safety
+             try { // Add try block for safety accessing nested state
                  if (isPlayoff) {
-                      if (state.currentPlayoffRoundIdx < 0 || state.currentPlayoffRoundIdx >= state.playoffRounds.length ||
+                      if (!state.playoffRounds || state.currentPlayoffRoundIdx < 0 || state.currentPlayoffRoundIdx >= state.playoffRounds.length ||
                           state.currentPlayoffMatchIdx < 0 || state.currentPlayoffMatchIdx >= state.playoffRounds[state.currentPlayoffRoundIdx].length) {
                           console.error("incrementScore: Invalid playoff index."); return;
                       }
                       match = state.playoffRounds[state.currentPlayoffRoundIdx][state.currentPlayoffMatchIdx];
                  } else { // Group
-                      if (state.currentGroupIdx < 0 || state.currentGroupIdx >= state.groups.length ||
+                      if (!state.groups || state.currentGroupIdx < 0 || state.currentGroupIdx >= state.groups.length ||
+                          !state.groups[state.currentGroupIdx].matches || state.groups[state.currentGroupIdx].currentMatchIdx < 0 ||
                            state.groups[state.currentGroupIdx].currentMatchIdx >= state.groups[state.currentGroupIdx].matches.length) {
                            console.error("incrementScore: Invalid group index."); return;
                       }
                       const group = state.groups[state.currentGroupIdx];
                       match = group.matches[group.currentMatchIdx];
                  }
+
+                 if (!match) throw new Error("Match object not found."); // Further safety
+
+                 if (!match.liveScore) match.liveScore = [0, 0]; // Initialize if needed
+
+                 if (playerIdentifier === 'p1') { match.liveScore[0]++; }
+                 else if (playerIdentifier === 'p2') { match.liveScore[1]++; }
+                 else { return; } // Invalid identifier
+
+                 // Update UI immediately
+                 el('player1-score').textContent = match.liveScore[0];
+                 el('player2-score').textContent = match.liveScore[1];
+
+                 console.log(`Score updated: ${match.liveScore[0]} - ${match.liveScore[1]}`);
+                 saveState(); // Save intermediate score immediately
+
              } catch (error) {
-                  console.error("Error accessing match data in incrementScore:", error);
+                  console.error("Error accessing match data in incrementScore:", error, "State:", JSON.parse(JSON.stringify(state)));
+                  // Optionally show an error to the user, though console is often enough
                   return;
              }
-
-
-             if (!match.liveScore) match.liveScore = [0, 0];
-
-             if (playerIdentifier === 'p1') { match.liveScore[0]++; }
-             else { match.liveScore[1]++; }
-
-             // Update UI
-             document.getElementById('player1-score').textContent = match.liveScore[0];
-             document.getElementById('player2-score').textContent = match.liveScore[1];
-
-             console.log(`Score updated: ${match.liveScore[0]} - ${match.liveScore[1]}`);
-             saveState(); // Save intermediate score immediately
         }
 
 
-        // --- Match Finalization ---
-        function finalizeMatch() { /* ... (Update lastCompletedMatchInfo here) ... */
+        // --- Match Finalization (Updates lastCompletedMatchInfo) ---
+        function finalizeMatch() {
              console.log("Attempting to finalize match...");
-             stopTimer(); // Stop timer first
+             if (!state || !state.timerConfig) {
+                 console.error("Cannot finalize: State or timerConfig missing.");
+                 return;
+             }
 
-             let match, score1, score2, p1Obj, p2Obj, p1Name, p2Name;
+             stopTimer(); // Stop timer first (marks timer inactive)
+
+             let match, score1 = 0, score2 = 0, p1Obj, p2Obj, p1Name = 'P1', p2Name = 'P2';
              let isPlayoff = state.phase === 'playoff';
-             let canProceed = true;
+             let canProceed = true; // Flag to control if we switch views
 
-             try { // Added try block
+             try { // Wrap state access in try-catch
                 if (isPlayoff) {
                     const roundIdx = state.currentPlayoffRoundIdx; const matchIdx = state.currentPlayoffMatchIdx;
-                    if (roundIdx < 0 || roundIdx >= state.playoffRounds.length || matchIdx >= state.playoffRounds[roundIdx].length) throw new Error("Invalid playoff index.");
+                    // Validate indices before access
+                    if (!state.playoffRounds || roundIdx < 0 || roundIdx >= state.playoffRounds.length ||
+                        matchIdx < 0 || matchIdx >= state.playoffRounds[roundIdx].length) {
+                          throw new Error(`Invalid playoff index: R${roundIdx}, M${matchIdx}`);
+                    }
                     match = state.playoffRounds[roundIdx][matchIdx];
-                    score1 = match.liveScore ? match.liveScore[0] : 0; score2 = match.liveScore ? match.liveScore[1] : 0;
-                    p1Obj = match.p1; p2Obj = match.p2; p1Name = p1Obj.name; p2Name = p2Obj.name;
+                    if (!match || !match.p1 || !match.p2) throw new Error("Playoff match data incomplete.");
 
+                    score1 = match.liveScore ? match.liveScore[0] : 0;
+                    score2 = match.liveScore ? match.liveScore[1] : 0;
+                    p1Obj = match.p1; p2Obj = match.p2;
+                    p1Name = p1Obj.name || 'Player 1'; p2Name = p2Obj.name || 'Player 2';
+
+                    // Playoff Draw Handling: Alert user, don't proceed.
                     if (score1 === score2) {
                         alert("Playoff Draw!\nIncrement score for the winner using '+', then click 'Exit Match' again.");
-                        canProceed = false;
+                        canProceed = false; // Prevent view switch
+                        // Re-activate timer briefly to allow score change? No, keep it stopped.
+                        startTimer(state.timerConfig.durationMinutes * 60); // Or maybe restart with full time? Decided against this. User needs to manually increment score THEN exit.
+                        pauseTimer(); // Immediately pause after restart if we did restart.
                     } else {
-                         recordPlayoffScore(roundIdx, matchIdx, score1, score2); // Advances state
-                         state.lastCompletedMatchInfo = { p1Name, p2Name, score: [score1, score2] }; // Update ticker info
+                         recordPlayoffScore(roundIdx, matchIdx, score1, score2); // Records score AND advances state internally
                     }
                 } else { // Group Stage
                     const groupIdx = state.currentGroupIdx;
-                    if (groupIdx < 0 || groupIdx >= state.groups.length) throw new Error("Invalid group index.");
+                     // Validate indices before access
+                    if (!state.groups || groupIdx < 0 || groupIdx >= state.groups.length) {
+                         throw new Error(`Invalid group index: ${groupIdx}`);
+                    }
                     const group = state.groups[groupIdx];
                     const matchIdx = group.currentMatchIdx;
-                    if (matchIdx >= group.matches.length) throw new Error("Invalid group match index.");
+                     if (!group.matches || matchIdx < 0 || matchIdx >= group.matches.length) {
+                         throw new Error(`Invalid group match index: G${groupIdx}, M${matchIdx}`);
+                     }
                     match = group.matches[matchIdx];
-                    const p1Idx = match.p1Idx; const p2Idx = match.p2Idx;
-                    score1 = match.liveScore ? match.liveScore[0] : 0; score2 = match.liveScore ? match.liveScore[1] : 0;
-                    p1Obj = group.players[p1Idx]; p2Obj = group.players[p2Idx]; p1Name = p1Obj.name; p2Name = p2Obj.name;
+                    if (!match || !group.players) throw new Error("Group match data incomplete.");
 
-                    recordScore(group, p1Idx, p2Idx, score1, score2); // Advances state
-                    state.lastCompletedMatchInfo = { p1Name, p2Name, score: [score1, score2] }; // Update ticker info
+                    const p1Idx = match.p1Idx; const p2Idx = match.p2Idx;
+                    if (p1Idx < 0 || p1Idx >= group.players.length || p2Idx < 0 || p2Idx >= group.players.length) {
+                         throw new Error(`Invalid player index in group: P1 ${p1Idx}, P2 ${p2Idx}`);
+                    }
+                    score1 = match.liveScore ? match.liveScore[0] : 0;
+                    score2 = match.liveScore ? match.liveScore[1] : 0;
+                    p1Obj = group.players[p1Idx]; p2Obj = group.players[p2Idx];
+                    p1Name = p1Obj.name || 'Player 1'; p2Name = p2Obj.name || 'Player 2';
+
+                    recordScore(group, p1Idx, p2Idx, score1, score2); // Records score AND advances state internally
                 }
+
+                // Update last completed match info *if* we are proceeding
+                if (canProceed) {
+                    state.lastCompletedMatchInfo = { p1Name, p2Name, score: [score1, score2] };
+                    console.log(`Match Finalized. Score: ${p1Name} ${score1} - ${score2} ${p2Name}. Last Match Info Updated.`);
+                }
+
              } catch(error) {
-                  console.error("Error during finalizeMatch data retrieval:", error);
-                  alert("An error occurred trying to finalize the match. Please check console.");
-                  canProceed = false; // Don't proceed if data fetch failed
+                  console.error("Error during finalizeMatch data retrieval or processing:", error, "State:", JSON.parse(JSON.stringify(state)));
+                  alert("An error occurred trying to finalize the match. State might be inconsistent. Check console.");
+                  canProceed = false; // Don't proceed if data fetch/processing failed
              }
 
 
-             console.log(`Match Finalized Score: ${p1Name} ${score1} - ${score2} ${p2Name}`);
-
              if (canProceed) {
+                // Save state *after* recording score and updating last match info
                 saveState();
-                switchToNonStreamView(); // Transition UI
+                switchToNonStreamView(); // Transition UI back to setup/standings
              } else {
-                console.log("Match finalization halted (e.g., playoff draw). User action required.");
+                console.log("Match finalization halted (e.g., playoff draw or error). User action required or error occurred.");
+                // If it was a playoff draw, the timer is already stopped. User adds score and clicks Exit again.
              }
         }
 
 
-        // --- Core Rendering Logic (Refined) ---
-        function render() { /* ... (Logic largely unchanged, ensure stopTicker is called) ... */
-            appDiv.style.display = 'none'; streamContainer.style.display = 'none';
-            stopCamera(); stopTicker(); // Ensure ticker stops when not in stream view
+        // --- Core Rendering Logic (Refined, includes stopTicker) ---
+        function render() {
+            stopCamera(); // Stop camera by default
+            stopTicker(); // Ensure ticker is stopped when not in stream view
+            appDiv.style.display = 'none';
+            streamContainer.style.display = 'none';
 
-            // console.log("Render: Phase=", state ? state.phase : 'null');
+            console.log("Render check: Phase=", state ? state.phase : 'null');
 
-            if (!state) { /* ... renderCreateForm ... */
+            if (!state) {
                 console.log("Render -> Create Form"); renderCreateForm(appDiv); appDiv.style.display = 'flex';
-            } else if (state.phase === 'completed') { /* ... renderChampion ... */
+            } else if (state.phase === 'completed') {
                 console.log("Render -> Champion Screen"); renderChampion(appDiv); appDiv.style.display = 'flex';
-            } else if (state.phase === 'playoff') { /* ... check indices, renderStreamView ... */
+            } else if (state.phase === 'playoff') {
                  const roundIdx = state.currentPlayoffRoundIdx; const matchIdx = state.currentPlayoffMatchIdx;
-                 if (roundIdx >= 0 && roundIdx < state.playoffRounds.length && matchIdx >= 0 && matchIdx < state.playoffRounds[roundIdx].length) { console.log("Render -> Playoff Stream View"); renderStreamView(); streamContainer.style.display = 'block'; }
-                 else { console.warn("Render: Playoff phase, invalid index."); renderBracket(appDiv); appDiv.style.display = 'flex'; }
-            } else if (state.phase === 'group') { /* ... check indices, renderStreamView or finishGroupStage ... */
+                 // Validate playoff state before rendering stream
+                 if (state.playoffRounds && roundIdx >= 0 && roundIdx < state.playoffRounds.length &&
+                     matchIdx >= 0 && matchIdx < state.playoffRounds[roundIdx].length &&
+                     state.playoffRounds[roundIdx][matchIdx]) {
+                     console.log("Render -> Playoff Stream View");
+                     renderStreamView(); // Sets up camera, timer, ticker
+                     streamContainer.style.display = 'block'; // Show stream
+                 } else {
+                     console.warn("Render: Playoff phase, but invalid index or data. Showing bracket.");
+                     renderBracket(appDiv); appDiv.style.display = 'flex';
+                 }
+            } else if (state.phase === 'group') {
                  const groupIdx = state.currentGroupIdx; let playableGroupFound = false;
-                 if (groupIdx >= 0 && groupIdx < state.groups.length) { const currentGroup = state.groups[groupIdx]; if (!currentGroup.isComplete && currentGroup.currentMatchIdx < currentGroup.matches.length) { playableGroupFound = true; } }
-                 if (playableGroupFound) { console.log("Render -> Group Stream View"); renderStreamView(); streamContainer.style.display = 'block'; }
-                 else { const allGroupsComplete = state.groups.every(g => g.isComplete); if (allGroupsComplete) { if (state.phase === 'group') { console.log("Render: All groups complete -> finishing..."); finishGroupStage(); return; } else { console.warn("Render: Group phase ended, but stuck?"); renderCreateForm(appDiv); appDiv.style.display = 'flex';} } else { console.warn("Render: Group phase, current invalid, but not all complete."); renderCreateForm(appDiv); appDiv.style.display = 'flex'; } }
-            } else if (state.phase === 'playoff_selection') { /* ... renderPlayoffSelection + Start button ... */
-                 console.log("Render -> Playoff Selection Screen"); renderPlayoffSelection(appDiv);
-                 const startButton = btn("Start First Playoff Match"); startButton.style.marginTop = '1rem'; startButton.onclick = () => { if (state.phase === 'playoff_selection' && state.playoffRounds && state.playoffRounds.length > 0 && state.playoffRounds[0].length > 0) { state.phase = 'playoff'; state.currentPlayoffRoundIdx = 0; state.currentPlayoffMatchIdx = 0; saveState(); render(); } else { console.error("Playoff state not ready."); alert("Error: Playoff data not found."); } };
-                 if (!document.getElementById('start-playoff-btn')) { startButton.id = 'start-playoff-btn'; appDiv.appendChild(startButton); }
+                 // Validate group state before rendering stream
+                 if (state.groups && groupIdx >= 0 && groupIdx < state.groups.length) {
+                     const currentGroup = state.groups[groupIdx];
+                     if (currentGroup && !currentGroup.isComplete && currentGroup.matches &&
+                         currentGroup.currentMatchIdx >= 0 && currentGroup.currentMatchIdx < currentGroup.matches.length) {
+                         playableGroupFound = true;
+                     }
+                 }
+
+                 if (playableGroupFound) {
+                     console.log("Render -> Group Stream View");
+                     renderStreamView(); // Sets up camera, timer, ticker
+                     streamContainer.style.display = 'block'; // Show stream
+                 } else {
+                     // Current group isn't playable, check if tournament should proceed
+                     const allGroupsComplete = state.groups && state.groups.every(g => g.isComplete);
+                     if (allGroupsComplete) {
+                         console.log("Render: All groups complete -> finishing group stage...");
+                         finishGroupStage(); // This will change state.phase and call render() again
+                         // Don't display anything yet, wait for the next render cycle
+                     } else {
+                         console.warn("Render: Group phase, current index invalid, but not all groups complete. Advancing group (or error state).");
+                          // Attempt to find the next playable group
+                          let nextGroupIdx = -1;
+                          if(state.groups) {
+                              for(let i = 0; i < state.groups.length; i++) {
+                                   const group = state.groups[i];
+                                   if(group && !group.isComplete) {
+                                        nextGroupIdx = i;
+                                        break;
+                                   }
+                              }
+                          }
+                          if (nextGroupIdx !== -1) {
+                               state.currentGroupIdx = nextGroupIdx;
+                               console.log(`Advanced to next playable group: ${nextGroupIdx}`);
+                               saveState();
+                               render(); // Re-render with the new group index
+                          } else {
+                               console.error("Render: Stuck in group phase - no playable group found, but not all complete?");
+                               renderCreateForm(appDiv); // Fallback to creation form
+                               appDiv.style.display = 'flex';
+                          }
+                     }
+                 }
+            } else if (state.phase === 'playoff_selection') {
+                 console.log("Render -> Playoff Selection Screen");
+                 renderPlayoffSelection(appDiv);
+                 const startButton = btn("Start First Playoff Match");
+                 startButton.style.marginTop = '1rem';
+                 startButton.id = 'start-playoff-btn'; // Use ID to prevent duplicates if re-rendered
+                 startButton.onclick = () => {
+                     if (state.phase === 'playoff_selection' && state.playoffRounds && state.playoffRounds.length > 0 && state.playoffRounds[0].length > 0) {
+                         state.phase = 'playoff';
+                         state.currentPlayoffRoundIdx = 0;
+                         state.currentPlayoffMatchIdx = 0;
+                         console.log("Starting first playoff match.");
+                         saveState();
+                         render(); // Re-render to show the stream view
+                     } else {
+                         console.error("Cannot start playoffs: Playoff data not ready or empty first round.");
+                         alert("Error: Playoff data missing or invalid.");
+                     }
+                 };
+                 // Only add the button if it doesn't exist
+                 if (!el('start-playoff-btn')) {
+                     appDiv.appendChild(startButton);
+                 }
                  appDiv.style.display = 'flex';
-            } else { /* ... Fallback ... */
-                console.error("Render: Unknown state phase:", state ? state.phase : 'null', "-> Fallback"); renderCreateForm(appDiv); appDiv.style.display = 'flex';
+            } else {
+                console.error("Render: Unknown or invalid state phase:", state ? state.phase : 'null', "-> Fallback to create form.");
+                clearState(); // Clear potentially corrupt state
+                renderCreateForm(appDiv);
+                appDiv.style.display = 'flex';
             }
         }
 
         // --- Setup ---
-        function renderCreateForm(app) { /* ... unchanged ... */ app.innerHTML = ''; const card = div('div', 'card'); const settingsCont = div('div'); const listCont = div('div'); const addBtn = btn('Add Player'); const startBtn = btn('Start Tournament', 'secondary'); const groupSizeRow = div('div', 'settings-row'); groupSizeRow.innerHTML = `<label for="maxGroupSizeInput">Max Players per Group:</label><input type="number" id="maxGroupSizeInput" min="2" value="4" class="player-input" style="width: 60px; flex-grow: 0;">`; const timerRow = div('div', 'settings-row'); const currentConfigDuration = (state && state.timerConfig && state.timerConfig.durationMinutes) ? state.timerConfig.durationMinutes : 5; timerRow.innerHTML = `<label for="matchDurationInput">Match Length (minutes):</label><input type="number" id="matchDurationInput" min="1" value="${currentConfigDuration}" class="player-input" style="width: 60px; flex-grow: 0;">`; settingsCont.append(groupSizeRow, timerRow); card.append(settingsCont, listCont, addBtn, startBtn); app.append(card); let players = []; function refreshPlayerList() { listCont.innerHTML = ''; players.forEach((p, i) => { const row = div('div', 'player-row'); const dot = div('div', 'player-color-static'); dot.style.background = p.color; dot.onclick = () => { p.color = randomColor(); dot.style.background = p.color; inpColor.value = p.color; }; const inpName = document.createElement('input'); inpName.placeholder = 'Name'; inpName.className = 'player-input'; inpName.value = p.name; inpName.oninput = e => p.name = e.target.value; const inpColor = document.createElement('input'); inpColor.type = 'color'; inpColor.value = p.color; inpColor.oninput = e => { p.color = e.target.value; dot.style.background = p.color; }; const del = btn('x', 'secondary'); del.onclick = () => { players.splice(i, 1); refreshPlayerList(); }; row.append(dot, inpName, inpColor, del); listCont.append(row); }); } addBtn.onclick = () => { players.push({ id: 'P' + Date.now() + players.length, name: '', color: randomColor() }); refreshPlayerList(); }; startBtn.onclick = () => { const cleanPlayers = players.filter(p => p.name.trim()); const maxGroupSize = parseInt(document.getElementById('maxGroupSizeInput').value, 10); const matchDuration = parseInt(document.getElementById('matchDurationInput').value, 10); if (cleanPlayers.length < 2) { alert('Need at least 2 players'); return; } if (isNaN(maxGroupSize) || maxGroupSize < 2) { alert('Max players per group must be at least 2'); return; } if (isNaN(matchDuration) || matchDuration < 1) { alert('Match duration must be at least 1 minute.'); return; } const timerConfig = { durationMinutes: matchDuration, timeRemaining: matchDuration * 60, isPaused: false, isActive: false }; startTournament(cleanPlayers, maxGroupSize, timerConfig); }; refreshPlayerList(); }
-        function startTournament(initialPlayers, maxGroupSize, timerConfig) { /* ... unchanged ... */ shuffle(initialPlayers); const groupsData = []; for (let i = 0; i < initialPlayers.length; i += maxGroupSize) { groupsData.push(initialPlayers.slice(i, i + maxGroupSize)); } if (groupsData.length > 1 && groupsData[groupsData.length - 1].length < 2) { const lastGroup = groupsData.pop(); lastGroup.forEach((player, index) => groupsData[index % groupsData.length].push(player)); } const finalGroups = groupsData.map((groupPlayers, index) => { const playersInGroup = groupPlayers.map(p => ({ ...p, points: 0, played: 0, wins: 0, draws: 0, losses: 0, goalsFor: 0, goalsAgainst: 0 })); return { id: index + 1, players: playersInGroup, matches: generateMatches(playersInGroup), currentMatchIdx: 0, isComplete: false, lastMatch: null }; }); finalGroups.forEach(group => shuffle(group.matches)); state = { phase: 'group', groups: finalGroups, currentGroupIdx: 0, timerConfig: timerConfig, playoffQualifiers: [], playoffRounds: [], currentPlayoffRoundIdx: -1, currentPlayoffMatchIdx: -1, champion: null, lastCompletedMatchInfo: null }; console.log("Tournament Started. Initial State:", JSON.parse(JSON.stringify(state))); saveState(); render(); }
+        function renderCreateForm(app) { /* ... unchanged ... */ app.innerHTML = ''; const card = div('div', 'card'); const settingsCont = div('div'); const listCont = div('div'); const addBtn = btn('Add Player'); const startBtn = btn('Start Tournament'); startBtn.style.marginTop = '1rem'; const resetBtn = btn('Clear Saved Data', 'secondary'); resetBtn.style.marginLeft = '1rem'; resetBtn.style.marginTop = '1rem'; const groupSizeRow = div('div', 'settings-row'); groupSizeRow.innerHTML = `<label for="maxGroupSizeInput">Max Players per Group:</label><input type="number" id="maxGroupSizeInput" min="2" value="4" class="player-input" style="width: 60px; flex-grow: 0;">`; const timerRow = div('div', 'settings-row'); const currentConfigDuration = (state && state.timerConfig && state.timerConfig.durationMinutes) ? state.timerConfig.durationMinutes : 5; timerRow.innerHTML = `<label for="matchDurationInput">Match Length (minutes):</label><input type="number" id="matchDurationInput" min="1" value="${currentConfigDuration}" class="player-input" style="width: 60px; flex-grow: 0;">`; settingsCont.append(groupSizeRow, timerRow); card.append(div('h2', 'section-title', 'New Tournament Setup'), settingsCont, div('h3', 'group-title', 'Players'), listCont); const buttonRow = div('div'); buttonRow.style.marginTop = '1rem'; buttonRow.append(addBtn, startBtn, resetBtn); card.append(buttonRow); app.append(card); let players = []; function refreshPlayerList() { listCont.innerHTML = ''; players.forEach((p, i) => { const row = div('div', 'player-row'); const dot = div('div', 'player-color-static'); dot.style.background = p.color; dot.onclick = () => { p.color = randomColor(); dot.style.background = p.color; inpColor.value = p.color; }; const inpName = document.createElement('input'); inpName.placeholder = 'Name'; inpName.className = 'player-input'; inpName.value = p.name; inpName.oninput = e => p.name = e.target.value; const inpColor = document.createElement('input'); inpColor.type = 'color'; inpColor.value = p.color; inpColor.oninput = e => { p.color = e.target.value; dot.style.background = p.color; }; const del = btn('x', 'secondary icon-button'); del.style.width='32px'; del.style.height='32px'; del.style.fontSize='1rem'; del.onclick = () => { players.splice(i, 1); refreshPlayerList(); }; row.append(dot, inpName, inpColor, del); listCont.append(row); }); } addBtn.onclick = () => { players.push({ id: 'P' + Date.now() + players.length, name: `Player ${players.length + 1}`, color: randomColor() }); refreshPlayerList(); }; startBtn.onclick = () => { const cleanPlayers = players.filter(p => p.name && p.name.trim()); const maxGroupSize = parseInt(el('maxGroupSizeInput').value, 10); const matchDuration = parseInt(el('matchDurationInput').value, 10); if (cleanPlayers.length < 2) { alert('Need at least 2 named players'); return; } if (isNaN(maxGroupSize) || maxGroupSize < 2) { alert('Max players per group must be at least 2'); return; } if (isNaN(matchDuration) || matchDuration < 1) { alert('Match duration must be at least 1 minute.'); return; } const timerConfig = { durationMinutes: matchDuration, timeRemaining: matchDuration * 60, isPaused: false, isActive: false }; startTournament(cleanPlayers, maxGroupSize, timerConfig); }; resetBtn.onclick = () => { if(confirm('Really clear all saved tournament data?')) { clearState(); render(); } }; refreshPlayerList(); }
+        function startTournament(initialPlayers, maxGroupSize, timerConfig) { /* ... unchanged ... */ shuffle(initialPlayers); const groupsData = []; for (let i = 0; i < initialPlayers.length; i += maxGroupSize) { groupsData.push(initialPlayers.slice(i, i + maxGroupSize)); } if (groupsData.length > 1 && groupsData[groupsData.length - 1].length === 1) { const lastGroup = groupsData.pop(); lastGroup.forEach((player, index) => groupsData[index % groupsData.length].push(player)); } const finalGroups = groupsData.map((groupPlayers, index) => { const playersInGroup = groupPlayers.map(p => ({ ...p, points: 0, played: 0, wins: 0, draws: 0, losses: 0, goalsFor: 0, goalsAgainst: 0 })); return { id: index + 1, players: playersInGroup, matches: generateMatches(playersInGroup), currentMatchIdx: 0, isComplete: false }; }); finalGroups.forEach(group => shuffle(group.matches)); state = { phase: 'group', groups: finalGroups, currentGroupIdx: 0, timerConfig: timerConfig, playoffQualifiers: [], playoffRounds: [], currentPlayoffRoundIdx: -1, currentPlayoffMatchIdx: -1, champion: null, lastCompletedMatchInfo: null // Initialize ticker info holder }; console.log("Tournament Started. Initial State:", JSON.parse(JSON.stringify(state))); saveState(); render(); }
 
         // --- Group Stage ---
-        function recordScore(group, p1Idx, p2Idx, score1, score2) { /* ... unchanged ... */ const p1 = group.players[p1Idx]; const p2 = group.players[p2Idx]; if(isNaN(score1) || isNaN(score2)) return; p1.played++; p2.played++; p1.goalsFor += score1; p1.goalsAgainst += score2; p2.goalsFor += score2; p2.goalsAgainst += score1; if (score1 > score2) { p1.wins++; p1.points += 3; p2.losses++; } else if (score2 > score1) { p2.wins++; p2.points += 3; p1.losses++; } else { p1.draws++; p1.points += 1; p2.draws++; p2.points += 1; } group.matches[group.currentMatchIdx].score = [score1, score2]; group.lastMatch = { p1Name: p1.name, p2Name: p2.name, score: [score1, score2] }; group.currentMatchIdx++; if (group.currentMatchIdx >= group.matches.length) { group.isComplete = true; } }
+        function recordScore(group, p1Idx, p2Idx, score1, score2) { /* ... unchanged ... */ const p1 = group.players[p1Idx]; const p2 = group.players[p2Idx]; if(isNaN(score1) || isNaN(score2) || !p1 || !p2) { console.error("Invalid data for recordScore"); return; } p1.played++; p2.played++; p1.goalsFor += score1; p1.goalsAgainst += score2; p2.goalsFor += score2; p2.goalsAgainst += score1; if (score1 > score2) { p1.wins++; p1.points += 3; p2.losses++; } else if (score2 > score1) { p2.wins++; p2.points += 3; p1.losses++; } else { p1.draws++; p1.points += 1; p2.draws++; p2.points += 1; } group.matches[group.currentMatchIdx].score = [score1, score2]; group.currentMatchIdx++; if (group.currentMatchIdx >= group.matches.length) { group.isComplete = true; console.log(`Group ${group.id} completed.`); } }
 
         // --- Playoff Setup ---
-        function finishGroupStage() { /* ... unchanged ... */ console.log("Finishing group stage..."); state.phase = 'playoff_selection'; let groupWinners = []; let allRunnersUp = []; let addedRunnerUp = null; state.groups.forEach(group => { const sortedPlayers = [...group.players].sort(comparePlayers); if(sortedPlayers.length > 0) groupWinners.push({...sortedPlayers[0], sourceGroup: group.id}); if(sortedPlayers.length > 1) allRunnersUp.push({...sortedPlayers[1], sourceGroup: group.id}); }); let playoffQualifiers = [...groupWinners]; if (groupWinners.length % 2 !== 0 && allRunnersUp.length > 0) { allRunnersUp.sort(comparePlayers); const bestRunnerUp = allRunnersUp[0]; if (!playoffQualifiers.some(p => p.id === bestRunnerUp.id)) { playoffQualifiers.push(bestRunnerUp); addedRunnerUp = bestRunnerUp; } } state.playoffQualifiers = playoffQualifiers; startPlayoffs(groupWinners, addedRunnerUp); console.log("Group stage finished, state prepared for playoff selection."); saveState(); render(); }
-        function startPlayoffs(groupWinners, addedRunnerUp) { /* ... unchanged ... */ console.log("Setting up playoff bracket..."); const qualifiers = [...state.playoffQualifiers]; shuffle(qualifiers); const firstRoundMatches = []; let remainingQualifiers = [...qualifiers]; if (addedRunnerUp && groupWinners.length > 0) { const sortedWinners = [...groupWinners].sort(comparePlayers); const bestWinner = sortedWinners[0]; const bestWinnerIdx = remainingQualifiers.findIndex(p => p.id === bestWinner.id); const runnerUpIdx = remainingQualifiers.findIndex(p => p.id === addedRunnerUp.id); if (bestWinnerIdx !== -1 && runnerUpIdx !== -1) { const p1 = remainingQualifiers.splice(bestWinnerIdx, 1)[0]; const adjustedRunnerUpIdx = (runnerUpIdx > bestWinnerIdx) ? runnerUpIdx - 1 : runnerUpIdx; const p2 = remainingQualifiers.splice(adjustedRunnerUpIdx, 1)[0]; firstRoundMatches.push({ p1, p2, score: null, winner: null, roundIdx: 0, matchIdx: 0, liveScore: [0,0] }); } else { console.warn("Seeding failed."); remainingQualifiers = [...qualifiers];} } let matchCounter = firstRoundMatches.length; while (remainingQualifiers.length >= 2) { const p1 = remainingQualifiers.pop(); const p2 = remainingQualifiers.pop(); firstRoundMatches.push({ p1, p2, score: null, winner: null, roundIdx: 0, matchIdx: matchCounter++, liveScore: [0,0] }); } state.playoffRounds = [firstRoundMatches]; state.currentPlayoffRoundIdx = -1; state.currentPlayoffMatchIdx = -1; console.log("Playoff bracket generated:", state.playoffRounds); }
+        function finishGroupStage() { /* ... unchanged ... */ console.log("Finishing group stage..."); state.phase = 'playoff_selection'; let groupWinners = []; let allRunnersUp = []; let addedRunnerUp = null; state.groups.forEach(group => { const sortedPlayers = [...group.players].sort(comparePlayers); if(sortedPlayers.length > 0) groupWinners.push({...sortedPlayers[0], sourceGroup: group.id}); if(sortedPlayers.length > 1) allRunnersUp.push({...sortedPlayers[1], sourceGroup: group.id, points: sortedPlayers[1].points, gd: sortedPlayers[1].goalsFor - sortedPlayers[1].goalsAgainst, gf: sortedPlayers[1].goalsFor }); }); let playoffQualifiers = [...groupWinners]; // Need an even number for playoffs if (groupWinners.length > 0 && groupWinners.length % 2 !== 0 && allRunnersUp.length > 0) { allRunnersUp.sort(comparePlayers); // Sort runners-up by same criteria const bestRunnerUp = allRunnersUp[0]; if (!playoffQualifiers.some(p => p.id === bestRunnerUp.id)) { // Avoid adding duplicate if winner was also best runner-up somehow playoffQualifiers.push(bestRunnerUp); addedRunnerUp = bestRunnerUp; console.log("Added best runner-up:", bestRunnerUp.name); } else { console.log("Best runner-up already qualified as winner."); } } // If still odd after adding best runner-up (e.g., 3 groups -> 3 winners + 1 runner-up = 4), we are good. // If we had 5 groups -> 5 winners. Adding best runner-up -> 6. Good. // If we had 2 groups -> 2 winners. Even. Good. // If we had 4 groups -> 4 winners. Even. Good. state.playoffQualifiers = playoffQualifiers; startPlayoffs(groupWinners, addedRunnerUp); // StartPlayoffs uses state.playoffQualifiers console.log("Group stage finished, state prepared for playoff selection. Qualifiers:", state.playoffQualifiers.map(p=>p.name)); saveState(); render(); // Re-render to show playoff selection screen }
+        function startPlayoffs(groupWinners, addedRunnerUp) { /* ... unchanged ... */ console.log("Setting up playoff bracket..."); const qualifiers = [...state.playoffQualifiers]; if(qualifiers.length < 2) { console.error("Not enough qualifiers for playoffs!"); state.phase='completed'; state.champion = qualifiers.length === 1 ? qualifiers[0] : null; return; } shuffle(qualifiers); const firstRoundMatches = []; let remainingQualifiers = [...qualifiers]; // Seeding attempt (Best winner vs Best runner-up) - Optional, requires careful index handling after shuffle/splice. Simple random pairing is more robust. let matchCounter = 0; while (remainingQualifiers.length >= 2) { const p1 = remainingQualifiers.pop(); const p2 = remainingQualifiers.pop(); firstRoundMatches.push({ p1, p2, score: null, winner: null, roundIdx: 0, matchIdx: matchCounter++, liveScore: [0,0] }); } if(remainingQualifiers.length === 1) { console.warn("Odd number of qualifiers, last one gets a BYE? Not implemented - should be handled by qualifier selection logic."); // This case should ideally be prevented by finishGroupStage logic } state.playoffRounds = [firstRoundMatches]; state.currentPlayoffRoundIdx = -1; // Will be set to 0 when user clicks 'Start Playoffs' state.currentPlayoffMatchIdx = -1; console.log("Playoff bracket generated:", state.playoffRounds); }
 
         // --- Playoff Gameplay ---
-        function recordPlayoffScore(roundIdx, matchIdx, score1, score2) { /* ... unchanged ... */ const match = state.playoffRounds[roundIdx][matchIdx]; match.score = [score1, score2]; match.winner = (score1 > score2) ? match.p1 : match.p2; const currentRound = state.playoffRounds[roundIdx]; const isLastMatchOfRound = (matchIdx === currentRound.length - 1); if (isLastMatchOfRound) { const winners = currentRound.map(m => m.winner).filter(Boolean); if (winners.length === 1) { finishTournament(winners[0]); return; } else if (winners.length > 1) { generateNextRound(winners); state.currentPlayoffRoundIdx++; state.currentPlayoffMatchIdx = 0; } else { console.error("No winners found?"); state.currentPlayoffMatchIdx++; } } else { state.currentPlayoffMatchIdx++; } }
-        function generateNextRound(winners) { /* ... unchanged ... */ console.log(`Generating round ${state.currentPlayoffRoundIdx + 2}`); const nextRoundMatches = []; const remainingWinners = [...winners]; shuffle(remainingWinners); let matchCounter = 0; while (remainingWinners.length >= 2) { const p1 = remainingWinners.pop(); const p2 = remainingWinners.pop(); nextRoundMatches.push({ p1, p2, score: null, winner: null, roundIdx: state.currentPlayoffRoundIdx + 1, matchIdx: matchCounter++, liveScore: [0,0] }); } state.playoffRounds.push(nextRoundMatches); }
+        function recordPlayoffScore(roundIdx, matchIdx, score1, score2) { /* ... unchanged ... */ const match = state.playoffRounds[roundIdx][matchIdx]; match.score = [score1, score2]; match.winner = (score1 > score2) ? match.p1 : match.p2; console.log(`Playoff R${roundIdx+1} M${matchIdx+1} Result: ${match.p1.name} ${score1} - ${score2} ${match.p2.name}. Winner: ${match.winner.name}`); const currentRound = state.playoffRounds[roundIdx]; const isLastMatchOfRound = (matchIdx === currentRound.length - 1); if (isLastMatchOfRound) { const winners = currentRound.map(m => m.winner).filter(Boolean); if (winners.length === 1) { finishTournament(winners[0]); return; // Tournament over! } else if (winners.length > 1) { console.log("Generating next playoff round..."); generateNextRound(winners); state.currentPlayoffRoundIdx++; // Advance to the next round index state.currentPlayoffMatchIdx = 0; // Start at the first match of the new round console.log(`Advanced to Playoff Round ${state.currentPlayoffRoundIdx + 1}, Match ${state.currentPlayoffMatchIdx + 1}`); } else { console.error("No winners found at end of round?"); // Should not happen state.currentPlayoffMatchIdx++; // Cautiously advance index anyway? Or handle error. For now, just log. } } else { state.currentPlayoffMatchIdx++; // Advance to the next match in the same round console.log(`Advanced to Playoff Round ${state.currentPlayoffRoundIdx + 1}, Match ${state.currentPlayoffMatchIdx + 1}`); } }
+        function generateNextRound(winners) { /* ... unchanged ... */ console.log(`Generating round ${state.playoffRounds.length + 1} with winners:`, winners.map(w=>w.name)); const nextRoundMatches = []; const remainingWinners = [...winners]; shuffle(remainingWinners); let matchCounter = 0; while (remainingWinners.length >= 2) { const p1 = remainingWinners.pop(); const p2 = remainingWinners.pop(); nextRoundMatches.push({ p1, p2, score: null, winner: null, roundIdx: state.playoffRounds.length, matchIdx: matchCounter++, liveScore: [0,0] }); } state.playoffRounds.push(nextRoundMatches); console.log("Next round generated:", nextRoundMatches); }
 
 
-        // --- Stream View Rendering (NEW LAYOUT) ---
+        // --- Stream View Rendering (NEW LAYOUT, Ticker Start) ---
         function renderStreamView() {
-            setupCamera();
-            startTicker(); // Start the previous match ticker
+            setupCamera(); // Start camera feed
+            startTicker(); // Start the previous match ticker animation cycle
 
-            let match, p1, p2, roundInfoText = "";
+            let match, p1, p2, roundInfoText = "Loading Match...";
             let score1 = 0, score2 = 0;
 
-            try {
+            try { // Wrap state access in try-catch
                 if (state.phase === 'group') {
-                    const group = state.groups[state.currentGroupIdx]; match = group.matches[group.currentMatchIdx];
-                    p1 = group.players[match.p1Idx]; p2 = group.players[match.p2Idx];
-                    roundInfoText = `Group ${group.id} - M ${group.currentMatchIdx + 1}/${group.matches.length}`;
-                } else {
-                    const roundIdx = state.currentPlayoffRoundIdx; const matchIdx = state.currentPlayoffMatchIdx;
-                    const round = state.playoffRounds[roundIdx]; match = round[matchIdx];
-                    p1 = match.p1; p2 = match.p2;
-                    const isFinal = round.length === 1 && roundIdx > 0;
-                    roundInfoText = isFinal ? 'Final' : `Playoffs R${roundIdx + 1} - M ${matchIdx + 1}/${round.length}`;
+                    const group = state.groups[state.currentGroupIdx];
+                    match = group.matches[group.currentMatchIdx];
+                    if (!match) throw new Error("Group match data missing.");
+                    p1 = group.players[match.p1Idx];
+                    p2 = group.players[match.p2Idx];
+                    if (!p1 || !p2) throw new Error("Group player data missing.");
+                    roundInfoText = `Group ${group.id} - Match ${group.currentMatchIdx + 1}/${group.matches.length}`;
+                } else { // Playoff
+                    const roundIdx = state.currentPlayoffRoundIdx;
+                    const matchIdx = state.currentPlayoffMatchIdx;
+                    const round = state.playoffRounds[roundIdx];
+                    match = round[matchIdx];
+                     if (!match || !match.p1 || !match.p2) throw new Error("Playoff match data missing.");
+                    p1 = match.p1;
+                    p2 = match.p2;
+                    const numRounds = state.playoffRounds.length;
+                    const isFinal = round.length === 1 && state.playoffRounds.length > 1; // Rough check for final
+                    const isSemi = round.length === 2 && state.playoffRounds.length > 2; // Rough check for semi
+                    let roundName = `Playoffs R${roundIdx + 1}`;
+                    if(isFinal) roundName = "Final";
+                    else if (isSemi) roundName = "Semi-Final";
+                    roundInfoText = `${roundName} - Match ${matchIdx + 1}/${round.length}`;
                 }
-                if (!match.liveScore) match.liveScore = [0, 0];
-                score1 = match.liveScore[0]; score2 = match.liveScore[1];
-            } catch (error) { console.error("Error getting match data:", error); roundInfoText = "Error"; return; }
 
-            // --- Populate Overlay ---
-            const el = (id) => document.getElementById(id);
+                if (!match.liveScore) match.liveScore = [0, 0]; // Ensure liveScore exists
+                score1 = match.liveScore[0];
+                score2 = match.liveScore[1];
+
+            } catch (error) {
+                 console.error("Error getting match data for stream view:", error, "State:", JSON.parse(JSON.stringify(state)));
+                 roundInfoText = "Error Loading Match";
+                 // Don't return, try to render placeholders
+                 p1 = { name: "Error", color: "#cccccc" };
+                 p2 = { name: "Error", color: "#cccccc" };
+                 score1 = 0; score2 = 0;
+            }
+
+            // --- Populate Overlay Elements ---
             el('match-info').textContent = roundInfoText;
             el('player1-name').textContent = p1.name; el('player1-name').style.color = p1.color;
             el('player1-score').textContent = score1;
             el('player2-name').textContent = p2.name; el('player2-name').style.color = p2.color;
             el('player2-score').textContent = score2;
 
-            // Timer
-            if (!state.timerConfig.isActive) { startTimer(state.timerConfig.timeRemaining || state.timerConfig.durationMinutes * 60); }
-            updateTimerDisplay();
+            // Timer - Start if not already active, or just update display
+            if (!state.timerConfig.isActive) {
+                // Use remaining time if it exists and > 0, otherwise use full duration
+                const initialTime = (state.timerConfig.timeRemaining > 0) ? state.timerConfig.timeRemaining : state.timerConfig.durationMinutes * 60;
+                startTimer(initialTime);
+            } else {
+                updateTimerDisplay(); // Ensure display is current
+            }
 
-            // --- Event Listeners (Re-attach ensuring correct target) ---
-             // Use event delegation or ensure elements exist before adding listener
+            // --- Event Listeners (Ensure elements exist) ---
             const p1GoalBtn = el('player1-goal-button');
             const p2GoalBtn = el('player2-goal-button');
             const pauseResumeBtn = el('pause-resume-button');
             const exitBtn = el('exit-stream-button');
 
+             // Remove previous listeners? Not strictly necessary if re-assigning onclick
              if(p1GoalBtn) p1GoalBtn.onclick = () => incrementScore('p1'); else console.error("P1 Goal Btn not found");
              if(p2GoalBtn) p2GoalBtn.onclick = () => incrementScore('p2'); else console.error("P2 Goal Btn not found");
-             if(pauseResumeBtn) { pauseResumeBtn.onclick = () => { if (state.timerConfig.isPaused) resumeTimer(); else pauseTimer(); }; pauseResumeBtn.textContent = state.timerConfig.isPaused ? '▶' : '❚❚'; } else console.error("Pause Btn not found");
-             if(exitBtn) exitBtn.onclick = () => { if (state.timerConfig.isActive && state.timerConfig.timeRemaining > 0 && !state.timerConfig.isPaused) { if (!confirm("Timer running! Finalize with current score?")) return; } else if (state.phase === 'playoff' && match.liveScore[0] === match.liveScore[1]) { /* No confirm for playoff draw */ } else { if (!confirm("Finalize match with current score?")) return; } finalizeMatch(); }; else console.error("Exit Btn not found");
+
+             if(pauseResumeBtn) {
+                 // Set initial text based on current state
+                 pauseResumeBtn.textContent = state.timerConfig.isPaused ? '▶' : '❚❚';
+                 // Assign click handler
+                 pauseResumeBtn.onclick = () => {
+                     if (!state || !state.timerConfig) return; // Safety check
+                     if (state.timerConfig.isPaused) {
+                         resumeTimer();
+                     } else {
+                         pauseTimer();
+                     }
+                 };
+             } else { console.error("Pause Btn not found"); }
+
+             if(exitBtn) {
+                 exitBtn.onclick = () => {
+                     // Check for playoff draw first - requires score change
+                     if (state.phase === 'playoff' && match && match.liveScore && match.liveScore[0] === match.liveScore[1]) {
+                          alert("Playoff Draw!\nIncrement score for the winner using '+', then click 'Exit Match' again.");
+                          return; // Don't finalize yet
+                     }
+
+                     // Check if timer is running and needs confirmation
+                     if (state.timerConfig.isActive && state.timerConfig.timeRemaining > 0 && !state.timerConfig.isPaused) {
+                         if (!confirm(`Timer has ${state.timerConfig.timeRemaining}s left!\nFinalize match now with current score (${match.liveScore[0]}-${match.liveScore[1]})?`)) {
+                             return; // User cancelled
+                         }
+                     }
+                     // Check if timer is paused or finished, less urgent confirmation
+                     else if (state.timerConfig.isActive && (state.timerConfig.isPaused || state.timerConfig.timeRemaining <= 0)) {
+                          if (!confirm(`Finalize match with current score (${match.liveScore[0]}-${match.liveScore[1]})?`)) {
+                               return; // User cancelled
+                          }
+                     }
+                     // If timer never started or already stopped (shouldn't happen normally here but maybe edge case)
+                     // else {
+                     //      if (!confirm(`Finalize match with current score (${match.liveScore[0]}-${match.liveScore[1]})?`)) {
+                     //          return; // User cancelled
+                     //      }
+                     // }
+
+                     // If we got past the checks, finalize.
+                     finalizeMatch();
+                 };
+             } else { console.error("Exit Btn not found"); }
         }
 
-        function switchToNonStreamView() { /* ... (Added stopTicker) ... */ stopCamera(); stopTimer(); stopTicker(); streamContainer.style.display = 'none'; appDiv.style.display = 'flex'; render(); }
+        function switchToNonStreamView() {
+            stopCamera();
+            stopTimer(); // Stops interval, marks inactive
+            stopTicker(); // Stops animation interval
+            streamContainer.style.display = 'none';
+            appDiv.style.display = 'flex'; // Show the non-stream UI container
+            render(); // Re-render the appropriate non-stream view (standings, bracket, etc.)
+        }
 
         // --- Champion / Bracket / Standings / Viz / Helpers (mostly unchanged) ---
         function finishTournament(champion) { console.log("Tournament Finished! Champion:", champion.name); state.phase = 'completed'; state.champion = champion; saveState(); render(); }
         function renderChampion(app) { /* ... unchanged ... */ app.innerHTML = ''; const card = div('div', 'card champion-box'); card.append(div('h2', 'section-title', 'Tournament Champion!')); if (state.champion) { const champBox = div('div'); const dot = div('div', 'player-color-static'); dot.style.background = state.champion.color; dot.style.width = 'clamp(60px, 15vh, 80px)'; dot.style.height = 'clamp(60px, 15vh, 80px)'; dot.style.margin = '0 auto 0.5rem auto'; const nm = div('div', 'player-name', state.champion.name); nm.style.fontSize = 'calc(var(--font-size-large) * 1.1)'; nm.style.fontWeight = 'bold'; champBox.append(dot, nm); card.append(champBox); } else { card.append(div('p', '', 'Error: Champion data not found.')); } const restart = btn('New Tournament'); restart.onclick = () => { clearState(); render(); }; card.append(restart); app.append(card); if(state.playoffRounds && state.playoffRounds.length > 0) renderBracket(app); if(state.groups) state.groups.forEach(group => renderGroupStandings(app, group)); }
         function renderBracket(app) { /* ... unchanged ... */ const bracketContainer = div('div', 'card playoff-bracket'); bracketContainer.append(div('h3', 'section-title', 'Playoff Bracket')); if (!state || !state.playoffRounds) return; state.playoffRounds.forEach((round, roundIndex) => { const roundDiv = div('div', 'playoff-round'); roundDiv.append(div('h4', '', `Round ${roundIndex + 1}`)); round.forEach(match => { const matchDiv = div('div', 'playoff-match'); const p1BoxEl = playerBox(match.p1); const p2BoxEl = playerBox(match.p2); const scoreDiv = div('div', 'match-score'); if (match.score !== null) { scoreDiv.textContent = `${match.score[0]} - ${match.score[1]}`; if (match.winner) { if (match.winner.id === match.p1.id) { p1BoxEl.querySelector('.pname').classList.add('winner'); p2BoxEl.querySelector('.pname').classList.add('loser'); } else { p2BoxEl.querySelector('.pname').classList.add('winner'); p1BoxEl.querySelector('.pname').classList.add('loser'); } } } else { scoreDiv.textContent = 'vs'; } matchDiv.append(p1BoxEl, scoreDiv, p2BoxEl); roundDiv.append(matchDiv); }); bracketContainer.append(roundDiv); }); app.append(bracketContainer); }
-        function renderGroupStandings(app, group) { /* ... unchanged ... */ const st = div('div', 'card standings'); const groupTitle = div('h3', '', `Group ${group.id} Standings`); st.append(groupTitle); const table = document.createElement('table'); table.innerHTML = `<thead><tr><th class="player-name-col">Player</th><th>Pts</th><th>Pld</th><th>W</th><th>D</th><th>L</th><th>GF</th><th>GA</th><th>GD</th></tr></thead>`; const tbody = document.createElement('tbody'); const sortedPlayers = [...group.players].sort(comparePlayers); sortedPlayers.forEach(p => { const tr = document.createElement('tr'); const gd = p.goalsFor - p.goalsAgainst; tr.innerHTML = `<td class="player-name-col"><span style="color:${p.color}">${p.name}</span></td><td>${p.points}</td><td>${p.played}</td><td>${p.wins}</td><td>${p.draws}</td><td>${p.losses}</td><td>${p.goalsFor}</td><td>${p.goalsAgainst}</td><td>${gd > 0 ? '+' : ''}${gd}</td>`; tbody.append(tr); }); table.append(tbody); st.append(table); app.append(st); }
-        function renderPlayoffSelection(app) { /* ... unchanged ... */ app.innerHTML = ''; const card = div('div', 'card'); card.append(div('h2', 'section-title', 'Playoff Qualifiers')); const qualifierList = div('div'); qualifierList.style.display = 'flex'; qualifierList.style.flexWrap = 'wrap'; qualifierList.style.justifyContent = 'center'; state.playoffQualifiers.forEach(p => { const box = playerBox(p); box.style.margin = '0.5rem'; qualifierList.append(box); }); card.append(qualifierList); app.append(card); const vizContainer = div('div', 'visualization card'); vizContainer.append(div('h3', 'group-title', 'Advancement Visualization')); const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg'); svg.setAttribute('viewBox', '0 0 300 150'); vizContainer.append(svg); app.append(vizContainer); renderBasicVisualization(svg, state.playoffQualifiers); }
+        function renderGroupStandings(app, group) { /* ... unchanged ... */ const st = div('div', 'card standings'); const groupTitle = div('h3', 'group-title', `Group ${group.id} Standings`); st.append(groupTitle); const table = document.createElement('table'); table.innerHTML = `<thead><tr><th class="player-name-col">Player</th><th>Pts</th><th>Pld</th><th>W</th><th>D</th><th>L</th><th>GF</th><th>GA</th><th>GD</th></tr></thead>`; const tbody = document.createElement('tbody'); const sortedPlayers = [...group.players].sort(comparePlayers); sortedPlayers.forEach(p => { const tr = document.createElement('tr'); const gd = p.goalsFor - p.goalsAgainst; tr.innerHTML = `<td class="player-name-col" style="display:flex; align-items:center; gap: 5px;"><div class="player-color-static" style="background:${p.color}; width:16px; height:16px; border-width:1px;"></div><span>${p.name}</span></td><td>${p.points}</td><td>${p.played}</td><td>${p.wins}</td><td>${p.draws}</td><td>${p.losses}</td><td>${p.goalsFor}</td><td>${p.goalsAgainst}</td><td>${gd > 0 ? '+' : ''}${gd}</td>`; tbody.append(tr); }); table.append(tbody); st.append(table); app.append(st); }
+        function renderPlayoffSelection(app) { /* ... unchanged ... */ app.innerHTML = ''; const card = div('div', 'card'); card.append(div('h2', 'section-title', 'Playoff Qualifiers')); const qualifierList = div('div'); qualifierList.style.display = 'flex'; qualifierList.style.flexWrap = 'wrap'; qualifierList.style.justifyContent = 'center'; qualifierList.style.gap = '1rem'; (state.playoffQualifiers || []).forEach(p => { const box = playerBox(p); box.style.flexDirection = 'column'; box.style.alignItems = 'center'; box.querySelector('.player-color-static').style.marginBottom = '0.3rem'; qualifierList.append(box); }); card.append(qualifierList); app.append(card); const vizContainer = div('div', 'visualization card'); vizContainer.append(div('h3', 'group-title', 'Advancement Visualization')); const svgElement = document.createElementNS('http://www.w3.org/2000/svg', 'svg'); svgElement.setAttribute('viewBox', '0 0 300 150'); vizContainer.append(svgElement); app.append(vizContainer); renderBasicVisualization(svgElement, state.playoffQualifiers || []); }
         function comparePlayers(a, b) { /* ... unchanged ... */ const gdA = a.goalsFor - a.goalsAgainst; const gdB = b.goalsFor - b.goalsAgainst; if (b.points !== a.points) return b.points - a.points; if (gdB !== gdA) return gdB - gdA; if (b.goalsFor !== a.goalsFor) return b.goalsFor - a.goalsFor; return a.name.localeCompare(b.name); }
         function shuffle(a) { /* ... unchanged ... */ for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } }
         function div(tag, cls = '', text = '') { /* ... unchanged ... */ const d = document.createElement(tag); if (cls) d.className = cls; if (text) d.textContent = text; return d; }
         function btn(text, cls = '') { /* ... unchanged ... */ const b = document.createElement('button'); b.textContent = text; if (cls) b.className = cls; return b; }
-        function playerBox(p) { /* ... unchanged ... */ const box = div('div', 'p-box'); const dot = div('div', 'player-color-static'); dot.style.background = p.color? p.color : '#ccc'; const nm = div('div', 'pname', p.name? p.name : 'TBD'); box.append(dot, nm); return box; }
+        function playerBox(p) { /* ... unchanged ... */ const box = div('div', 'p-box'); const dot = div('div', 'player-color-static'); dot.style.background = p && p.color? p.color : '#ccc'; const nm = div('div', 'pname', p && p.name? p.name : 'TBD'); box.append(dot, nm); return box; }
         function randomColor() { /* ... unchanged ... */ return '#' + Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0'); }
-        function generateMatches(groupPlayers) { /* ... unchanged ... */ const matches = []; const pIdx = groupPlayers.map((_, i) => i); for (let i = 0; i < pIdx.length; i++) { for (let j = i + 1; j < pIdx.length; j++) { matches.push({ p1Idx: pIdx[i], p2Idx: pIdx[j], score: null, liveScore:[0,0] }); } } return matches; }
-        function renderBasicVisualization(svg, qualifiers) { /* ... unchanged ... */ svg.innerHTML = ''; if (!qualifiers || qualifiers.length === 0) return; const width = 300; const height = 150; const nodeRadius = 8; const padding = 20; const targetY = height - padding - 15; const targetX = width / 2; const playoffText = document.createElementNS('http://www.w3.org/2000/svg', 'text'); playoffText.setAttribute('x', targetX); playoffText.setAttribute('y', targetY + 10); playoffText.setAttribute('class', 'playoff-area-text'); playoffText.textContent = 'Playoffs'; svgElement.appendChild(playoffText); const numQ = qualifiers.length; qualifiers.forEach((p, i) => { const angle = (Math.PI * (i + 0.5)) / numQ; const sX = targetX + (width / 2 - padding * 2) * Math.cos(angle - Math.PI / 2); const sY = (height / 2) - (height / 3) * Math.sin(angle - Math.PI / 2); const line = document.createElementNS('http://www.w3.org/2000/svg', 'line'); line.setAttribute('x1', sX); line.setAttribute('y1', sY); line.setAttribute('x2', targetX); line.setAttribute('y2', targetY); line.setAttribute('class', 'qualifier-line'); svgElement.appendChild(line); const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle'); circle.setAttribute('cx', sX); circle.setAttribute('cy', sY); circle.setAttribute('r', nodeRadius); circle.setAttribute('fill', p.color); circle.setAttribute('stroke', '#fff'); circle.setAttribute('stroke-width', '1'); svgElement.appendChild(circle); const text = document.createElementNS('http://www.w3.org/2000/svg', 'text'); text.setAttribute('x', sX); text.setAttribute('y', sY - nodeRadius - 2); text.setAttribute('class', 'qualifier-text'); text.textContent = p.name; svgElement.appendChild(text); }); }
+        function generateMatches(groupPlayers) { /* ... unchanged ... */ const matches = []; const pIndices = groupPlayers.map((_, i) => i); for (let i = 0; i < pIndices.length; i++) { for (let j = i + 1; j < pIndices.length; j++) { matches.push({ p1Idx: pIndices[i], p2Idx: pIndices[j], score: null, liveScore:[0,0] }); } } return matches; }
+        function renderBasicVisualization(svgElement, qualifiers) { /* ... unchanged ... */ svgElement.innerHTML = ''; if (!qualifiers || qualifiers.length === 0) return; const width = 300; const height = 150; const nodeRadius = 8; const padding = 20; const targetY = height - padding - 15; const targetX = width / 2; const playoffText = document.createElementNS('http://www.w3.org/2000/svg', 'text'); playoffText.setAttribute('x', targetX); playoffText.setAttribute('y', targetY + 10); playoffText.setAttribute('class', 'playoff-area-text'); playoffText.textContent = 'Playoffs'; svgElement.appendChild(playoffText); const numQ = qualifiers.length; qualifiers.forEach((p, i) => { const angle = (Math.PI * (i + 0.5)) / numQ; const sX = targetX + (width / 2 - padding * 2) * Math.cos(angle - Math.PI / 2); const sY = (height / 2) - (height / 3) * Math.sin(angle - Math.PI / 2); const line = document.createElementNS('http://www.w3.org/2000/svg', 'line'); line.setAttribute('x1', sX); line.setAttribute('y1', sY); line.setAttribute('x2', targetX); line.setAttribute('y2', targetY); line.setAttribute('class', 'qualifier-line'); svgElement.appendChild(line); const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle'); circle.setAttribute('cx', sX); circle.setAttribute('cy', sY); circle.setAttribute('r', nodeRadius); circle.setAttribute('fill', p.color || '#ccc'); circle.setAttribute('stroke', '#fff'); circle.setAttribute('stroke-width', '1'); svgElement.appendChild(circle); const text = document.createElementNS('http://www.w3.org/2000/svg', 'text'); text.setAttribute('x', sX); text.setAttribute('y', sY - nodeRadius - 2); text.setAttribute('class', 'qualifier-text'); text.textContent = p.name || 'TBD'; svgElement.appendChild(text); }); }
+        function el(id) { return document.getElementById(id); } // Helper
 
 
     })();
