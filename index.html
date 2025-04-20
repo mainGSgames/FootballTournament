@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Sega Football Stream Overlay v2 - Fixed</title>
+    <title>Sega Football Stream Overlay v2 (Fixed)</title>
     <style>
         :root {
             --accent: #10b981; /* Emerald green */
@@ -14,10 +14,10 @@
             --player1-color: #3b82f6; /* Blue */
             --player2-color: #ef4444; /* Red */
             --timer-color: #f59e0b; /* Amber */
-            --button-size: clamp(40px, 7vh, 55px); /* Slightly smaller buttons */
-            --font-size-large: clamp(1.4rem, 4.5vh, 2.8rem); /* Slightly smaller */
-            --font-size-medium: clamp(0.9rem, 2.8vh, 1.6rem); /* Slightly smaller */
-            --font-size-small: clamp(0.75rem, 2.2vh, 1.1rem); /* Slightly smaller */
+            --button-size: clamp(40px, 7vh, 55px);
+            --font-size-large: clamp(1.4rem, 4.5vh, 2.8rem);
+            --font-size-medium: clamp(0.9rem, 2.8vh, 1.6rem);
+            --font-size-small: clamp(0.75rem, 2.2vh, 1.1rem);
             --border-color: #475569;
             --input-bg: #334155;
             --win-color: var(--accent);
@@ -26,14 +26,15 @@
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, Segoe UI, Roboto, Helvetica, Arial, sans-serif; }
         html, body { height: 100%; width: 100%; overflow: hidden; background-color: var(--bg); color: var(--fg); }
 
-        button { background: var(--accent); color: #fff; border: none; border-radius: 0.5rem; font-weight: 600; cursor: pointer; padding: 0.5em 1em; transition: transform 0.1s ease; font-size: var(--font-size-small); }
-        button:hover { transform: scale(1.03); }
+        button { background: var(--accent); color: #fff; border: none; border-radius: 0.5rem; font-weight: 600; cursor: pointer; padding: 0.5em 1em; transition: transform 0.1s ease, background-color 0.2s ease; font-size: var(--font-size-small); }
+        button:hover { transform: scale(1.03); background-color: #14cc91; } /* Slightly lighter on hover */
         button.icon-button { padding: 0; width: var(--button-size); height: var(--button-size); font-size: calc(var(--button-size) * 0.5); display: flex; align-items: center; justify-content: center; border-radius: 50%; }
         button.secondary { background: var(--card); }
+        button.secondary:hover { background: #334155; } /* Darker secondary hover */
 
         /* --- Setup/Non-Stream Views (mostly unchanged) --- */
         #app { width: 100%; height: 100%; display: none; flex-direction: column; align-items: center; justify-content: center; padding: 1rem; }
-        .card { background: var(--card); padding: clamp(1rem, 3vw, 1.5rem); border-radius: 1rem; margin-bottom: 1rem; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); max-width: 700px; width: 90%; overflow-y: auto; max-height: 85vh; }
+        .card { background: var(--card); padding: clamp(0.5rem, 2vw, 1rem); border-radius: 1rem; margin-bottom: 1rem; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); max-width: 700px; width: 90%; overflow-y: auto; max-height: 85vh; }
         .player-row { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem; }
         .player-color-static { width: 32px; height: 32px; border-radius: 50%; border: 2px solid #fff; flex-shrink: 0; cursor: pointer; }
         .player-input { flex-grow: 1; background-color: var(--input-bg); color: var(--fg); border: 1px solid var(--border-color); padding: 0.5rem; border-radius: 0.3rem; font-size: var(--font-size-small);}
@@ -45,7 +46,7 @@
         .group-title, .section-title { font-size: var(--font-size-medium); margin-bottom: 0.75rem; color: var(--accent); border-bottom: 1px solid var(--accent); padding-bottom: 0.3rem; }
         /* --- Standings/Bracket (unchanged) --- */
         .standings { margin-top: 1rem; font-size: var(--font-size-small); overflow-x: auto; } .standings table { width: 100%; border-collapse: collapse; margin-top: 0.5rem; } .standings th, .standings td { padding: 0.4rem 0.2rem; text-align: center; white-space: nowrap; } .standings tr:nth-child(even) { background: #334155; } .standings th { background: var(--accent); color: var(--bg); font-weight: bold; } .standings .player-name-col { text-align: left; padding-left: 0.5rem; }
-        .playoff-bracket { margin-top: 1rem; } .playoff-round { margin-bottom: 1rem; border-left: 2px solid var(--border-color); padding-left: 1rem;} .playoff-match { display: flex; justify-content: space-between; align-items: center; padding: 0.3rem 0.5rem; border-bottom: 1px dashed var(--border-color); } .playoff-match .p-box { flex-basis: 40%; display: flex; align-items: center; gap: 0.3rem; } .playoff-match .p-box .pname { font-size: var(--font-size-small); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;} .playoff-match .player-color-static { width: 20px; height: 20px; border-width: 1px; flex-shrink: 0;} .playoff-match .match-score { font-weight: bold; font-size: var(--font-size-small); } .p-box .pname.winner { color: var(--win-color); font-weight: bold;} .p-box .pname.loser { text-decoration: line-through; opacity: 0.7;}
+        .playoff-bracket { margin-top: 1rem; } .playoff-round { margin-bottom: 1rem; border-left: 2px solid var(--border-color); padding-left: 1rem;} .playoff-match { display: flex; justify-content: space-between; align-items: center; padding: 0.3rem 0.5rem; border-bottom: 1px dashed var(--border-color); } .playoff-match .p-box { flex-basis: 40%; display: flex; align-items: center; gap: 0.3rem; } .playoff-match .p-box .pname { font-size: var(--font-size-small); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;} .playoff-match .player-color-static { width: 20px; height: 20px; border-width: 1px;} .playoff-match .match-score { font-weight: bold; font-size: var(--font-size-small); } .p-box .pname.winner { color: var(--win-color); font-weight: bold;} .p-box .pname.loser { text-decoration: line-through; opacity: 0.7;}
         .champion-box { text-align: center; padding: 2rem; } .champion-box .player-name { font-size: calc(var(--font-size-large) * 1.1); color: var(--win-color); } .champion-box .player-color-static { width: clamp(60px, 15vh, 80px); height: clamp(60px, 15vh, 80px); margin: 0 auto 0.5rem auto; }
         .visualization { margin-top: 1rem; width: 100%; } .visualization svg { width: 100%; min-height: 150px; max-height: 30vh; background: var(--bg); border-radius: 0.5rem; border: 1px solid var(--card); } .qualifier-node { fill: var(--accent); } .qualifier-text { fill: var(--fg); font-size: 0.7rem; text-anchor: middle; } .qualifier-line { stroke: var(--fg); stroke-width: 1; opacity: 0.5; } .playoff-area-text { fill: var(--fg); font-size: 0.9rem; text-anchor: middle; font-weight: bold; }
 
@@ -53,68 +54,138 @@
         /* --- Stream View --- */
         #stream-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: var(--bg); display: none; }
         #camera-feed { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: 1; background-color: #333; }
-        #overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 2; display: flex; flex-direction: column; pointer-events: none; padding: clamp(5px, 1vh, 10px); /* Reduced padding */ }
+        #overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 2; display: flex; flex-direction: column; pointer-events: none; padding: clamp(5px, 1vh, 10px); }
 
         /* Overlay Layout - Top, Spacer, Bottom */
-        .overlay-top { display: flex; justify-content: space-between; align-items: center; padding: 0.3em 0.8em; background: var(--overlay-bg); border-radius: 0.5rem; pointer-events: auto; flex-shrink: 0; order: 1; /* Top */ }
+        .overlay-top {
+            display: flex;
+            justify-content: space-between; /* Distributes items */
+            align-items: center;
+            padding: 0.3em 0.8em;
+            background: var(--overlay-bg);
+            border-radius: 0.5rem;
+            pointer-events: auto; /* Enable interaction for children */
+            flex-shrink: 0;
+            order: 1; /* Top */
+            gap: clamp(0.5rem, 2vw, 1rem); /* Space between items */
+        }
         .overlay-spacer { flex-grow: 1; order: 2; /* Middle */ }
-        .overlay-bottom { display: flex; flex-direction: column; align-items: center; order: 3; /* Bottom */ pointer-events: auto; flex-shrink: 0; width: 100%; }
+        .overlay-bottom {
+            display: flex;
+            flex-direction: column; /* Stack ticker and player bar */
+            align-items: center;
+            order: 3; /* Bottom */
+            pointer-events: auto; /* Enable interaction for children */
+            flex-shrink: 0;
+            width: 100%;
+        }
 
         /* Top Bar Components */
-        .match-info { font-size: var(--font-size-small); text-align: center; color: #ccc; flex-grow: 1; margin: 0 1rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .timer-controls { display: flex; align-items: center; gap: 0.5rem;}
-        .timer { font-size: var(--font-size-large); font-weight: bold; color: var(--timer-color); text-align: right; }
+        .match-info {
+            font-size: var(--font-size-small);
+            color: #ccc;
+            flex-shrink: 1; /* Allow shrinking if needed */
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            text-align: left; /* Align left */
+            min-width: 50px; /* Prevent collapsing too small */
+        }
+        .timer-controls {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            flex-shrink: 0; /* Prevent shrinking timer */
+        }
+        .timer {
+            font-size: var(--font-size-large);
+            font-weight: bold;
+            color: var(--timer-color);
+            text-align: right;
+        }
         .timer.paused { opacity: 0.6; }
-        .pause-resume-button { width: calc(var(--button-size)*0.8); height: calc(var(--button-size)*0.8); font-size: calc(var(--button-size) * 0.4); } /* Smaller pause */
+        .pause-resume-button {
+            width: calc(var(--button-size)*0.8);
+            height: calc(var(--button-size)*0.8);
+            font-size: calc(var(--button-size) * 0.4);
+        }
+        /* Exit button is now part of the top bar flow */
+        #exit-stream-button {
+             /* No position:fixed needed */
+             flex-shrink: 0; /* Prevent shrinking */
+             /* Removed fixed positioning styles: position, bottom, right, z-index */
+        }
+
 
         /* Bottom Area Components */
         #previous-match-ticker {
-            width: 80%; /* Adjust as needed */
-            background: rgba(15, 23, 42, 0.6); /* --overlay-bg but slightly less opaque */
+            width: clamp(250px, 60vw, 500px); /* Adjust width */
+            background: rgba(0, 0, 0, 0.7); /* Slightly darker */
             color: #eee;
             font-size: var(--font-size-small);
-            padding: 0.3em 0.6em;
-            border-radius: 0.3rem;
-            margin-bottom: clamp(3px, 0.5vh, 5px);
+            padding: 0.4em 0.8em;
+            border-radius: 0.4rem;
+            margin-bottom: clamp(5px, 0.8vh, 8px); /* Space above player bar */
             text-align: center;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            opacity: 0; /* Hidden by default */
-            /* Transition applied via animation */
+            opacity: 0; /* Hidden by default, animation controls visibility */
+            transition: opacity 0.5s ease-in-out; /* Fallback transition */
         }
-
-        .player-bar { display: flex; justify-content: space-between; align-items: center; width: 100%; background: var(--overlay-bg); border-radius: 0.5rem; padding: clamp(3px, 0.8vh, 8px) clamp(8px, 1.5vw, 15px); }
-        .player-info { display: flex; align-items: center; gap: clamp(5px, 1.5vw, 15px); flex-basis: 48%; /* Adjust space */ }
-        .player-info.player2 { flex-direction: row-reverse; /* Right align P2 name/score */ }
-        .player-name { font-size: var(--font-size-medium); font-weight: bold; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        .player-score { font-size: var(--font-size-large); font-weight: bold; margin: 0 clamp(5px, 1vw, 10px); }
-        .goal-button { background-color: var(--accent); flex-shrink: 0; }
-         /* Player name color applied via JS */
-
-        /* --- FIX: Moved Exit Button to bottom-left --- */
-        #exit-stream-button {
-            position: fixed;
-            bottom: 10px;
-            left: 10px; /* Changed from right */
-            z-index: 10;
-            opacity: 0.7;
-            pointer-events: auto; /* Ensure it's clickable */
-        }
-        #exit-stream-button:hover { opacity: 1; }
-
-
-        /* --- Animation for ticker --- */
+        /* Animation for ticker - remains the same */
         @keyframes fadeInOut {
-          0% { opacity: 0; transform: translateY(5px); }
-          15% { opacity: 1; transform: translateY(0); } /* Fade in quicker */
-          85% { opacity: 1; transform: translateY(0); } /* Stay visible longer */
-          100% { opacity: 0; transform: translateY(5px); } /* Fade out */
+           0% { opacity: 0; transform: translateY(10px); } /* Start faded and slightly down */
+           15% { opacity: 1; transform: translateY(0); } /* Fade in quick */
+           85% { opacity: 1; transform: translateY(0); } /* Stay visible */
+           100% { opacity: 0; transform: translateY(10px); } /* Fade out */
+        }
+        #previous-match-ticker.animate {
+           animation: fadeInOut 8s ease-in-out forwards; /* Slightly longer duration */
         }
 
-        #previous-match-ticker.animate {
-          animation: fadeInOut 7s ease-in-out forwards; /* Adjust total duration */
+        .player-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            background: var(--overlay-bg);
+            border-radius: 0.5rem;
+            padding: clamp(5px, 1vh, 10px) clamp(10px, 2vw, 20px); /* Adjusted padding */
         }
+        .player-info {
+            display: flex;
+            align-items: center;
+            gap: clamp(8px, 2vw, 15px); /* Increased gap slightly */
+            flex-basis: 49%; /* Give a bit more space around center */
+            overflow: hidden; /* Prevent content overflow */
+        }
+        .player-info.player1 { justify-content: flex-start; /* Align P1 content left */ }
+        .player-info.player2 {
+            flex-direction: row-reverse; /* Keeps order: Button, Score, Name (visually reversed) */
+            justify-content: flex-start; /* Align P2 content right (because of row-reverse) */
+            text-align: right; /* Ensure text inside aligns right */
+        }
+        .player-name {
+            font-size: var(--font-size-medium);
+            font-weight: bold;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .player-score {
+            font-size: var(--font-size-large);
+            font-weight: bold;
+            margin: 0 clamp(8px, 1.5vw, 12px); /* Adjusted margin */
+        }
+        .goal-button {
+            background-color: var(--accent);
+            flex-shrink: 0;
+             /* Pointer events enabled by default on buttons */
+        }
+        /* Player name color applied via JS */
+
+        /* No fixed positioning needed for exit button anymore */
 
     </style>
 </head>
@@ -125,18 +196,18 @@
         <video id="camera-feed" playsinline autoplay muted></video>
         <div id="overlay">
             <div class="overlay-top">
-                 <div id="match-info" class="match-info">Loading...</div>
+                 <div id="match-info" class="match-info">Loading Match...</div>
                  <div class="timer-controls">
                      <div id="timer" class="timer">00:00</div>
                      <button id="pause-resume-button" class="icon-button pause-resume-button">❚❚</button>
                  </div>
+                 <button id="exit-stream-button" class="secondary">Exit</button>
             </div>
 
             <div class="overlay-spacer"></div>
 
             <div class="overlay-bottom">
-                 <div id="previous-match-ticker"></div>
-
+                 <div id="previous-match-ticker">Preparing...</div>
                  <div class="player-bar">
                     <div class="player-info player1">
                         <button id="player1-goal-button" class="icon-button goal-button">+</button>
@@ -150,9 +221,7 @@
                     </div>
                  </div>
             </div>
-
-             <button id="exit-stream-button" class="secondary icon-button">✖</button>
-        </div>
+            </div>
     </div>
 
     <script>
@@ -167,12 +236,15 @@
         const appDiv = document.getElementById('app');
         const streamContainer = document.getElementById('stream-container');
         const cameraVideo = document.getElementById('camera-feed');
-        // Other elements cached dynamically or via el(id) helper
+        // Other elements cached within functions using el(id) helper
 
         // --- Initialization & State ---
         init();
 
-        function init() { loadState(); render(); }
+        function init() {
+             loadState();
+             render(); // Initial render based on loaded state
+        }
 
         function loadState() {
             let loadedState = null;
@@ -183,29 +255,39 @@
                 loadedState = null;
             }
 
-            // Ensure timerConfig exists and is valid
+            // Ensure timer config exists and has defaults if missing or invalid
             let timerConfig = { durationMinutes: 5, timeRemaining: 300, isPaused: false, isActive: false };
             if (loadedState && loadedState.timerConfig) {
-                timerConfig.durationMinutes = parseInt(loadedState.timerConfig.durationMinutes, 10) || 5;
-                // If timer wasn't active, reset remaining time to full duration
-                if (!loadedState.timerConfig.isActive) {
-                     timerConfig.timeRemaining = timerConfig.durationMinutes * 60;
-                } else {
-                     // Otherwise, load remaining time, default to full duration if invalid
-                     timerConfig.timeRemaining = parseInt(loadedState.timerConfig.timeRemaining, 10);
-                     if (isNaN(timerConfig.timeRemaining) || timerConfig.timeRemaining < 0) {
-                          timerConfig.timeRemaining = timerConfig.durationMinutes * 60;
-                     }
-                }
-                timerConfig.isPaused = loadedState.timerConfig.isPaused || false;
-                timerConfig.isActive = loadedState.timerConfig.isActive || false;
+                 // Ensure durationMinutes is a valid number, default to 5
+                 timerConfig.durationMinutes = parseInt(loadedState.timerConfig.durationMinutes, 10);
+                 if (isNaN(timerConfig.durationMinutes) || timerConfig.durationMinutes < 1) {
+                    timerConfig.durationMinutes = 5;
+                 }
+                 // If timer wasn't active, reset timeRemaining to full duration
+                 if (!loadedState.timerConfig.isActive) {
+                    timerConfig.timeRemaining = timerConfig.durationMinutes * 60;
+                 } else {
+                    // Ensure timeRemaining is a valid number, default to full duration if invalid
+                    timerConfig.timeRemaining = parseInt(loadedState.timerConfig.timeRemaining, 10);
+                    if (isNaN(timerConfig.timeRemaining) || timerConfig.timeRemaining < 0) {
+                        timerConfig.timeRemaining = timerConfig.durationMinutes * 60;
+                    }
+                 }
+                 timerConfig.isPaused = loadedState.timerConfig.isPaused || false;
+                 timerConfig.isActive = loadedState.timerConfig.isActive || false;
+            } else if (loadedState) {
+                 // If loadedState exists but timerConfig doesn't, add default timerConfig
+                 timerConfig.timeRemaining = timerConfig.durationMinutes * 60; // Set initial time
+                 loadedState.timerConfig = timerConfig;
             }
 
             if (loadedState) {
+                // Always overwrite the loaded timer config with the validated/defaulted one
                 loadedState.timerConfig = timerConfig;
-                // Initialize last match info if it doesn't exist
+
+                // Initialize last match info if needed
                 if (!loadedState.lastCompletedMatchInfo) {
-                    loadedState.lastCompletedMatchInfo = null;
+                     loadedState.lastCompletedMatchInfo = null;
                 }
             }
 
@@ -213,168 +295,197 @@
             console.log("State loaded:", JSON.parse(JSON.stringify(state || {})));
         }
 
+
         function saveState() {
-            if (state) {
-                localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-                // console.log("State saved.");
-            } else {
-                localStorage.removeItem(STORAGE_KEY);
-                console.log("State is null, storage cleared.");
-            }
+             if (state) {
+                  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+                  // console.log("State saved."); // Reduce console noise
+             } else {
+                  localStorage.removeItem(STORAGE_KEY);
+                  console.log("State is null, storage cleared.");
+             }
         }
+
         function clearState() {
-             stopTicker(); // Stop ticker before clearing state
-             stopTimer();
-             stopCamera();
              localStorage.removeItem(STORAGE_KEY);
              state = null;
+             stopCamera();
+             stopTimer();
+             stopTicker();
              console.log("State cleared.");
         }
 
         // --- Camera Handling ---
         async function setupCamera() {
-            if (cameraStream) return; // Already active
-            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-                console.warn("getUserMedia not supported");
-                cameraVideo.style.backgroundColor = '#222'; // Fallback bg
-                return;
-            }
-            try {
-                const constraints = { video: { facingMode: "environment" }, audio: false };
-                cameraStream = await navigator.mediaDevices.getUserMedia(constraints);
-                cameraVideo.srcObject = cameraStream;
-                await cameraVideo.play(); // Ensure playback starts
-                console.log("Camera stream started.");
-            } catch (err) {
-                console.error("Error accessing camera:", err);
-                cameraVideo.style.backgroundColor = '#222'; // Fallback bg on error
-            }
-         }
-        function stopCamera() {
-            if (cameraStream) {
-                cameraStream.getTracks().forEach(track => track.stop());
-                cameraStream = null;
-                cameraVideo.srcObject = null;
-                console.log("Camera stream stopped.");
-            }
+             if (cameraStream) return; // Already running
+             if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                  console.warn("getUserMedia not supported by this browser.");
+                  alert("Camera access is not supported or denied.");
+                  cameraVideo.style.backgroundColor = '#222'; // Show dark background
+                  return;
+             }
+             try {
+                  const constraints = { video: { facingMode: "environment" }, audio: false };
+                  cameraStream = await navigator.mediaDevices.getUserMedia(constraints);
+                  cameraVideo.srcObject = cameraStream;
+                  await cameraVideo.play(); // Ensure video plays
+                  console.log("Camera stream started.");
+             } catch (err) {
+                  console.error("Error accessing camera:", err);
+                  cameraVideo.style.backgroundColor = '#333'; // Show fallback background
+                  if (err.name === "NotAllowedError") {
+                       alert("Camera permission denied. Please allow camera access in browser settings.");
+                  } else if (err.name === "NotFoundError") {
+                       alert("No environment-facing camera found.");
+                  } else {
+                       alert("Could not access camera. Error: " + err.message);
+                  }
+             }
         }
 
-        // --- Timer Handling (Pause/Resume logic verified) ---
+        function stopCamera() {
+             if (cameraStream) {
+                  cameraStream.getTracks().forEach(track => track.stop());
+                  cameraStream = null;
+                  cameraVideo.srcObject = null;
+                  console.log("Camera stream stopped.");
+             }
+        }
+
+        // --- Timer Handling ---
+        // Starts the timer interval if not already running
         function startTimer(durationSeconds) {
-             stopTimer(); // Ensure no duplicate timers
-             if (!state || !state.timerConfig) return;
+             stopTimer(); // Ensure any previous interval is cleared
+             if (!state || !state.timerConfig) {
+                console.error("Cannot start timer: state or timerConfig missing.");
+                return;
+             }
+
              state.timerConfig.timeRemaining = durationSeconds;
              state.timerConfig.isPaused = false;
              state.timerConfig.isActive = true;
-             updateTimerDisplay(); // Initial display update
-             const pauseResumeBtn = el('pause-resume-button');
-             if(pauseResumeBtn) pauseResumeBtn.textContent = '❚❚'; // Set initial icon
+             updateTimerDisplay(); // Show initial time immediately
 
              timerInterval = setInterval(() => {
-                  if (!state || !state.timerConfig) { // Safety check
-                       stopTimer();
-                       return;
+                  // Double check state exists within interval
+                  if (!state || !state.timerConfig) {
+                    console.error("Timer interval lost state. Stopping.");
+                    stopTimer();
+                    return;
                   }
+                  // Only decrement if active and not paused
                   if (!state.timerConfig.isPaused && state.timerConfig.isActive) {
                        state.timerConfig.timeRemaining--;
                        updateTimerDisplay();
                        if (state.timerConfig.timeRemaining <= 0) {
-                            console.log("Timer reached zero, finalizing match...");
-                            finalizeMatch(); // Auto-finalize when timer ends
+                            // Timer reached zero
+                            console.log("Timer ended.");
+                            finalizeMatch(); // Finalize automatically when time runs out
                        }
                   }
              }, 1000);
+
              saveState(); // Save state after starting
-             console.log("Timer started");
+             console.log(`Timer started for ${durationSeconds} seconds.`);
         }
 
+        // Pauses the timer if active
         function pauseTimer() {
-            if (timerInterval && state && state.timerConfig.isActive && !state.timerConfig.isPaused) {
-                state.timerConfig.isPaused = true;
-                updateTimerDisplay(); // Update visual state (e.g., opacity)
-                const btn = el('pause-resume-button');
-                if (btn) btn.textContent = '▶'; // Update button text
-                saveState(); // Save paused state
-                console.log("Timer paused");
-            }
-        }
-
-        function resumeTimer() {
-            if (timerInterval && state && state.timerConfig.isActive && state.timerConfig.isPaused) {
-                state.timerConfig.isPaused = false;
-                updateTimerDisplay(); // Update visual state
-                const btn = el('pause-resume-button');
-                if (btn) btn.textContent = '❚❚'; // Update button text
-                saveState(); // Save resumed state
-                console.log("Timer resumed");
-            }
-        }
-
-        function stopTimer() {
-            clearInterval(timerInterval);
-            timerInterval = null;
-            if (state && state.timerConfig) {
-                // Don't reset time remaining here, just mark as inactive
-                state.timerConfig.isActive = false;
-                state.timerConfig.isPaused = false; // Ensure not stuck in paused state
-                 // No saveState() here, called by callers like finalizeMatch or clearState
-            }
-            // Reset display if needed (e.g., when exiting stream)
-             const timerElement = el('timer');
-             if(timerElement && (!state || !state.timerConfig || !state.timerConfig.isActive)) {
-                  const duration = (state && state.timerConfig) ? state.timerConfig.durationMinutes * 60 : 300;
-                  const minutes = Math.floor(duration / 60);
-                  const seconds = duration % 60;
-                  timerElement.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-                  timerElement.classList.remove('paused');
+             // Check if timer is actually running and active
+             if (timerInterval && state && state.timerConfig.isActive) {
+                  if (!state.timerConfig.isPaused) { // Only pause if not already paused
+                       state.timerConfig.isPaused = true;
+                       updateTimerDisplay(); // Update visual state (e.g., add 'paused' class)
+                       const btn = el('pause-resume-button');
+                       if (btn) btn.textContent = '▶'; // Update button text
+                       saveState(); // Save the paused state
+                       console.log("Timer paused");
+                  }
+             } else {
+                console.log("Timer cannot be paused (not active or already paused).");
              }
-            console.log("Timer stopped interval");
         }
 
+        // Resumes the timer if paused
+        function resumeTimer() {
+             // Check if timer exists and is currently paused
+             if (timerInterval && state && state.timerConfig.isActive) {
+                  if (state.timerConfig.isPaused) { // Only resume if paused
+                       state.timerConfig.isPaused = false;
+                       updateTimerDisplay(); // Update visual state
+                       const btn = el('pause-resume-button');
+                       if (btn) btn.textContent = '❚❚'; // Update button text
+                       saveState(); // Save the resumed state
+                       console.log("Timer resumed");
+                  }
+             } else {
+                 console.log("Timer cannot be resumed (not active or not paused).");
+             }
+        }
+
+        // Stops the timer interval completely
+        function stopTimer() {
+             clearInterval(timerInterval);
+             timerInterval = null;
+             // Update state ONLY if state exists
+             if(state && state.timerConfig) {
+                 state.timerConfig.isActive = false;
+                 state.timerConfig.isPaused = false;
+                 // Don't reset timeRemaining here, keep it for potential restart or final score
+                 updateTimerDisplay(); // Ensure display reflects inactive state
+                 saveState();
+             }
+             console.log("Timer stopped");
+        }
+
+        // Updates the timer display element
         function updateTimerDisplay() {
-            if (!state || !state.timerConfig) return;
-            const timerElement = el('timer');
-            if (!timerElement) return;
-            const time = Math.max(0, state.timerConfig.timeRemaining);
-            const minutes = Math.floor(time / 60);
-            const seconds = time % 60;
-            timerElement.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-            timerElement.classList.toggle('paused', state.timerConfig.isPaused);
+             const timerElement = el('timer');
+             if (!timerElement) return; // Element not found
+
+             let time = 0;
+             let isPaused = false;
+             // Safely access timer state
+             if (state && state.timerConfig) {
+                time = Math.max(0, state.timerConfig.timeRemaining);
+                isPaused = state.timerConfig.isPaused;
+             }
+
+             const minutes = Math.floor(time / 60);
+             const seconds = time % 60;
+             timerElement.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+             timerElement.classList.toggle('paused', isPaused);
         }
 
-        // --- Ticker Handling (NEW) ---
-         function startTicker() {
-             stopTicker(); // Clear previous interval if any
-             console.log("Starting previous match ticker");
-             const tickerElement = el('previous-match-ticker');
-             if (!tickerElement) { console.error("Ticker element not found"); return; }
 
-             let initialDisplay = true; // Flag to show immediately without delay
+         // --- Ticker Handling ---
+         function startTicker() {
+             stopTicker(); // Clear previous interval
+             console.log("Starting previous match ticker animation loop");
+             const tickerElement = el('previous-match-ticker');
+             if (!tickerElement) {
+                console.error("Ticker element not found.");
+                return;
+             }
 
              const showTick = () => {
                   if (state && state.lastCompletedMatchInfo) {
                        const { p1Name, p2Name, score } = state.lastCompletedMatchInfo;
                        tickerElement.textContent = `Last: ${p1Name} ${score[0]} - ${score[1]} ${p2Name}`;
-                       // Force animation restart: remove class, trigger reflow, add class
+                       // Force restart animation: remove class, trigger reflow, add class
                        tickerElement.classList.remove('animate');
-                       void tickerElement.offsetWidth; // Trigger reflow hack
+                       void tickerElement.offsetWidth; // Reflow hack
                        tickerElement.classList.add('animate');
-                       tickerElement.style.opacity = 1; // Make sure it's visible when animating
+                       tickerElement.style.opacity = ''; // Let animation control opacity
                   } else {
                        tickerElement.textContent = ''; // Clear if no info
+                       tickerElement.style.opacity = 0; // Hide explicitly if no data
                        tickerElement.classList.remove('animate');
-                       tickerElement.style.opacity = 0; // Hide if no info
                   }
              };
 
-             if (state && state.lastCompletedMatchInfo) {
-                showTick(); // Show immediately the first time if data exists
-                initialDisplay = false;
-             } else {
-                tickerElement.style.opacity = 0; // Ensure hidden if no data initially
-             }
-
-             // Run periodically AFTER the initial display (if any)
+             showTick(); // Show immediately once
+             // Set interval to repeat the animation periodically
              tickerInterval = setInterval(showTick, 15000); // Repeat every 15 seconds
          }
 
@@ -384,14 +495,14 @@
               const tickerElement = el('previous-match-ticker');
               if (tickerElement) {
                    tickerElement.classList.remove('animate');
-                   tickerElement.style.opacity = 0; // Hide it explicitly
+                   tickerElement.style.opacity = 0; // Ensure it's hidden
               }
               console.log("Ticker stopped");
          }
 
-        // --- Score Handling (Robustness Added) ---
+        // --- Score Handling ---
         function incrementScore(playerIdentifier) {
-             // Allow score changes even if timer is paused, but only if match is active
+             // Allow score changes if match is active (even if paused)
              if (!state || !state.timerConfig || !state.timerConfig.isActive) {
                   console.log("Score change prevented: Match/Timer not active.");
                   return;
@@ -400,30 +511,44 @@
              let match;
              let isPlayoff = state.phase === 'playoff';
 
-             try { // Add try block for safety accessing nested state
+             try {
                  if (isPlayoff) {
-                      if (!state.playoffRounds || state.currentPlayoffRoundIdx < 0 || state.currentPlayoffRoundIdx >= state.playoffRounds.length ||
-                          state.currentPlayoffMatchIdx < 0 || state.currentPlayoffMatchIdx >= state.playoffRounds[state.currentPlayoffRoundIdx].length) {
-                          console.error("incrementScore: Invalid playoff index."); return;
+                      const roundIdx = state.currentPlayoffRoundIdx;
+                      const matchIdx = state.currentPlayoffMatchIdx;
+                      // Validate indices
+                      if (roundIdx < 0 || roundIdx >= state.playoffRounds.length ||
+                          matchIdx < 0 || matchIdx >= state.playoffRounds[roundIdx].length) {
+                          throw new Error("Invalid playoff index.");
                       }
-                      match = state.playoffRounds[state.currentPlayoffRoundIdx][state.currentPlayoffMatchIdx];
-                 } else { // Group
-                      if (!state.groups || state.currentGroupIdx < 0 || state.currentGroupIdx >= state.groups.length ||
-                          !state.groups[state.currentGroupIdx].matches || state.groups[state.currentGroupIdx].currentMatchIdx < 0 ||
-                           state.groups[state.currentGroupIdx].currentMatchIdx >= state.groups[state.currentGroupIdx].matches.length) {
-                           console.error("incrementScore: Invalid group index."); return;
+                      match = state.playoffRounds[roundIdx][matchIdx];
+                 } else { // Group Stage
+                      const groupIdx = state.currentGroupIdx;
+                      // Validate indices
+                      if (groupIdx < 0 || groupIdx >= state.groups.length) {
+                           throw new Error("Invalid group index.");
                       }
-                      const group = state.groups[state.currentGroupIdx];
-                      match = group.matches[group.currentMatchIdx];
+                      const group = state.groups[groupIdx];
+                      const matchIdx = group.currentMatchIdx;
+                      if (matchIdx < 0 || matchIdx >= group.matches.length) {
+                           throw new Error("Invalid group match index.");
+                      }
+                      match = group.matches[matchIdx];
                  }
 
-                 if (!match) throw new Error("Match object not found."); // Further safety
+                 // Ensure liveScore array exists
+                 if (!match.liveScore || !Array.isArray(match.liveScore) || match.liveScore.length !== 2) {
+                    match.liveScore = [0, 0];
+                 }
 
-                 if (!match.liveScore) match.liveScore = [0, 0]; // Initialize if needed
-
-                 if (playerIdentifier === 'p1') { match.liveScore[0]++; }
-                 else if (playerIdentifier === 'p2') { match.liveScore[1]++; }
-                 else { return; } // Invalid identifier
+                 // Increment score
+                 if (playerIdentifier === 'p1') {
+                      match.liveScore[0]++;
+                 } else if (playerIdentifier === 'p2') {
+                      match.liveScore[1]++;
+                 } else {
+                     console.warn("Invalid player identifier for score increment:", playerIdentifier);
+                     return; // Don't proceed if identifier is wrong
+                 }
 
                  // Update UI immediately
                  el('player1-score').textContent = match.liveScore[0];
@@ -433,371 +558,1283 @@
                  saveState(); // Save intermediate score immediately
 
              } catch (error) {
-                  console.error("Error accessing match data in incrementScore:", error, "State:", JSON.parse(JSON.stringify(state)));
-                  // Optionally show an error to the user, though console is often enough
+                  console.error("Error accessing match data in incrementScore:", error);
+                  // Optionally alert user or handle error state
+                  alert("Error updating score. Check console.");
                   return;
              }
         }
 
 
-        // --- Match Finalization (Updates lastCompletedMatchInfo) ---
+        // --- Match Finalization ---
         function finalizeMatch() {
              console.log("Attempting to finalize match...");
-             if (!state || !state.timerConfig) {
-                 console.error("Cannot finalize: State or timerConfig missing.");
-                 return;
-             }
+             stopTimer(); // Stop timer first, state will be saved inside stopTimer
 
-             stopTimer(); // Stop timer first (marks timer inactive)
-
-             let match, score1 = 0, score2 = 0, p1Obj, p2Obj, p1Name = 'P1', p2Name = 'P2';
+             let match, score1, score2, p1Obj, p2Obj, p1Name = 'P1', p2Name = 'P2'; // Default names
              let isPlayoff = state.phase === 'playoff';
-             let canProceed = true; // Flag to control if we switch views
+             let canProceed = true; // Flag to determine if UI should switch
 
-             try { // Wrap state access in try-catch
+             try {
+                // Retrieve current match and player data
                 if (isPlayoff) {
-                    const roundIdx = state.currentPlayoffRoundIdx; const matchIdx = state.currentPlayoffMatchIdx;
-                    // Validate indices before access
-                    if (!state.playoffRounds || roundIdx < 0 || roundIdx >= state.playoffRounds.length ||
-                        matchIdx < 0 || matchIdx >= state.playoffRounds[roundIdx].length) {
-                          throw new Error(`Invalid playoff index: R${roundIdx}, M${matchIdx}`);
+                    const roundIdx = state.currentPlayoffRoundIdx;
+                    const matchIdx = state.currentPlayoffMatchIdx;
+                    if (roundIdx < 0 || roundIdx >= state.playoffRounds.length || matchIdx < 0 || matchIdx >= state.playoffRounds[roundIdx].length) {
+                        throw new Error("FinalizeMatch: Invalid playoff index.");
                     }
                     match = state.playoffRounds[roundIdx][matchIdx];
-                    if (!match || !match.p1 || !match.p2) throw new Error("Playoff match data incomplete.");
-
-                    score1 = match.liveScore ? match.liveScore[0] : 0;
-                    score2 = match.liveScore ? match.liveScore[1] : 0;
                     p1Obj = match.p1; p2Obj = match.p2;
-                    p1Name = p1Obj.name || 'Player 1'; p2Name = p2Obj.name || 'Player 2';
-
-                    // Playoff Draw Handling: Alert user, don't proceed.
-                    if (score1 === score2) {
-                        alert("Playoff Draw!\nIncrement score for the winner using '+', then click 'Exit Match' again.");
-                        canProceed = false; // Prevent view switch
-                        // Re-activate timer briefly to allow score change? No, keep it stopped.
-                        startTimer(state.timerConfig.durationMinutes * 60); // Or maybe restart with full time? Decided against this. User needs to manually increment score THEN exit.
-                        pauseTimer(); // Immediately pause after restart if we did restart.
-                    } else {
-                         recordPlayoffScore(roundIdx, matchIdx, score1, score2); // Records score AND advances state internally
-                    }
                 } else { // Group Stage
                     const groupIdx = state.currentGroupIdx;
-                     // Validate indices before access
-                    if (!state.groups || groupIdx < 0 || groupIdx >= state.groups.length) {
-                         throw new Error(`Invalid group index: ${groupIdx}`);
+                    if (groupIdx < 0 || groupIdx >= state.groups.length) {
+                        throw new Error("FinalizeMatch: Invalid group index.");
                     }
                     const group = state.groups[groupIdx];
                     const matchIdx = group.currentMatchIdx;
-                     if (!group.matches || matchIdx < 0 || matchIdx >= group.matches.length) {
-                         throw new Error(`Invalid group match index: G${groupIdx}, M${matchIdx}`);
-                     }
-                    match = group.matches[matchIdx];
-                    if (!match || !group.players) throw new Error("Group match data incomplete.");
-
-                    const p1Idx = match.p1Idx; const p2Idx = match.p2Idx;
-                    if (p1Idx < 0 || p1Idx >= group.players.length || p2Idx < 0 || p2Idx >= group.players.length) {
-                         throw new Error(`Invalid player index in group: P1 ${p1Idx}, P2 ${p2Idx}`);
+                    if (matchIdx < 0 || matchIdx >= group.matches.length) {
+                        throw new Error("FinalizeMatch: Invalid group match index.");
                     }
-                    score1 = match.liveScore ? match.liveScore[0] : 0;
-                    score2 = match.liveScore ? match.liveScore[1] : 0;
+                    match = group.matches[matchIdx];
+                    const p1Idx = match.p1Idx; const p2Idx = match.p2Idx;
                     p1Obj = group.players[p1Idx]; p2Obj = group.players[p2Idx];
-                    p1Name = p1Obj.name || 'Player 1'; p2Name = p2Obj.name || 'Player 2';
-
-                    recordScore(group, p1Idx, p2Idx, score1, score2); // Records score AND advances state internally
                 }
 
-                // Update last completed match info *if* we are proceeding
-                if (canProceed) {
-                    state.lastCompletedMatchInfo = { p1Name, p2Name, score: [score1, score2] };
-                    console.log(`Match Finalized. Score: ${p1Name} ${score1} - ${score2} ${p2Name}. Last Match Info Updated.`);
+                // Safely get names and scores
+                p1Name = p1Obj ? p1Obj.name : 'Player 1';
+                p2Name = p2Obj ? p2Obj.name : 'Player 2';
+                score1 = (match && match.liveScore && typeof match.liveScore[0] === 'number') ? match.liveScore[0] : 0;
+                score2 = (match && match.liveScore && typeof match.liveScore[1] === 'number') ? match.liveScore[1] : 0;
+
+                // --- Record Score and Update State ---
+                if (isPlayoff) {
+                    // Check for playoff draw - requires manual resolution
+                    if (score1 === score2) {
+                        alert("Playoff Draw!\nPlease manually increment the score for the winner using the '+' button, then click 'Exit' again to finalize.");
+                        canProceed = false; // Don't switch view yet
+                        startTimer(state.timerConfig.timeRemaining > 0 ? state.timerConfig.timeRemaining : 10); // Briefly restart timer or keep it paused
+                        pauseTimer(); // Ensure it's paused for manual score add
+                    } else {
+                         // Record the valid playoff score
+                         recordPlayoffScore(state.currentPlayoffRoundIdx, state.currentPlayoffMatchIdx, score1, score2); // This function advances playoff state indices
+                         state.lastCompletedMatchInfo = { p1Name, p2Name, score: [score1, score2] }; // Update ticker info
+                    }
+                } else { // Group Stage
+                    // Record the group stage score (draws are allowed)
+                    const groupIdx = state.currentGroupIdx;
+                    const group = state.groups[groupIdx];
+                    const p1Idx = match.p1Idx; const p2Idx = match.p2Idx;
+                    recordScore(group, p1Idx, p2Idx, score1, score2); // This function advances group state index
+                    state.lastCompletedMatchInfo = { p1Name, p2Name, score: [score1, score2] }; // Update ticker info
                 }
 
              } catch(error) {
-                  console.error("Error during finalizeMatch data retrieval or processing:", error, "State:", JSON.parse(JSON.stringify(state)));
-                  alert("An error occurred trying to finalize the match. State might be inconsistent. Check console.");
-                  canProceed = false; // Don't proceed if data fetch/processing failed
+                  console.error("Error during finalizeMatch data retrieval or processing:", error);
+                  alert("An error occurred trying to finalize the match. Please check console.");
+                  canProceed = false; // Don't proceed if data fetch failed
              }
 
+             // Log the final score attempted
+             console.log(`Match Finalized Attempt Score: ${p1Name} ${score1} - ${score2} ${p2Name}`);
 
+             // Only switch view if the match finalization process didn't require user intervention (like playoff draw)
              if (canProceed) {
-                // Save state *after* recording score and updating last match info
-                saveState();
-                switchToNonStreamView(); // Transition UI back to setup/standings
+                saveState(); // Save the final state AFTER score recording
+                switchToNonStreamView(); // Transition UI back to setup/results
              } else {
-                console.log("Match finalization halted (e.g., playoff draw or error). User action required or error occurred.");
-                // If it was a playoff draw, the timer is already stopped. User adds score and clicks Exit again.
+                saveState(); // Still save state even if not proceeding (e.g., playoff draw state)
+                console.log("Match finalization halted (e.g., playoff draw). User action required before switching view.");
+                // No UI switch here, user needs to add score and click Exit again.
              }
         }
 
 
-        // --- Core Rendering Logic (Refined, includes stopTicker) ---
+        // --- Core Rendering Logic ---
         function render() {
-            stopCamera(); // Stop camera by default
-            stopTicker(); // Ensure ticker is stopped when not in stream view
+            // Hide both views initially
             appDiv.style.display = 'none';
             streamContainer.style.display = 'none';
+            // Clean up resources associated with the stream view
+            stopCamera();
+            stopTicker(); // Stop ticker animation when not in stream view
 
-            console.log("Render check: Phase=", state ? state.phase : 'null');
+            console.log("Render: State Phase =", state ? state.phase : 'null');
 
             if (!state) {
-                console.log("Render -> Create Form"); renderCreateForm(appDiv); appDiv.style.display = 'flex';
+                // No state exists -> show setup form
+                console.log("Render -> Create Form");
+                renderCreateForm(appDiv);
+                appDiv.style.display = 'flex'; // Show setup view
             } else if (state.phase === 'completed') {
-                console.log("Render -> Champion Screen"); renderChampion(appDiv); appDiv.style.display = 'flex';
+                // Tournament finished -> show champion screen
+                console.log("Render -> Champion Screen");
+                renderChampion(appDiv);
+                appDiv.style.display = 'flex'; // Show results view
             } else if (state.phase === 'playoff') {
-                 const roundIdx = state.currentPlayoffRoundIdx; const matchIdx = state.currentPlayoffMatchIdx;
-                 // Validate playoff state before rendering stream
-                 if (state.playoffRounds && roundIdx >= 0 && roundIdx < state.playoffRounds.length &&
-                     matchIdx >= 0 && matchIdx < state.playoffRounds[roundIdx].length &&
-                     state.playoffRounds[roundIdx][matchIdx]) {
-                     console.log("Render -> Playoff Stream View");
-                     renderStreamView(); // Sets up camera, timer, ticker
-                     streamContainer.style.display = 'block'; // Show stream
+                 // In playoff phase -> check if current match indices are valid
+                 const roundIdx = state.currentPlayoffRoundIdx;
+                 const matchIdx = state.currentPlayoffMatchIdx;
+                 // Check if indices point to a valid, existing match
+                 if (roundIdx >= 0 && roundIdx < state.playoffRounds.length &&
+                     matchIdx >= 0 && matchIdx < state.playoffRounds[roundIdx].length) {
+                      console.log("Render -> Playoff Stream View");
+                      renderStreamView(); // Setup and show stream view
+                      streamContainer.style.display = 'block';
                  } else {
-                     console.warn("Render: Playoff phase, but invalid index or data. Showing bracket.");
-                     renderBracket(appDiv); appDiv.style.display = 'flex';
+                      // Invalid indices, but in playoff phase -> maybe round just finished?
+                      // Show the bracket view as a fallback or intermediate state
+                      console.warn("Render: Playoff phase, but invalid match index. Showing bracket.");
+                      renderBracket(appDiv); // Show the bracket
+                      // Potentially add a button here to "Start Next Round/Match" if applicable
+                      appDiv.style.display = 'flex';
                  }
             } else if (state.phase === 'group') {
-                 const groupIdx = state.currentGroupIdx; let playableGroupFound = false;
-                 // Validate group state before rendering stream
-                 if (state.groups && groupIdx >= 0 && groupIdx < state.groups.length) {
-                     const currentGroup = state.groups[groupIdx];
-                     if (currentGroup && !currentGroup.isComplete && currentGroup.matches &&
-                         currentGroup.currentMatchIdx >= 0 && currentGroup.currentMatchIdx < currentGroup.matches.length) {
-                         playableGroupFound = true;
-                     }
+                 // In group stage -> check if current match indices are valid
+                 const groupIdx = state.currentGroupIdx;
+                 let playableGroupFound = false;
+                 // Check group index is valid
+                 if (groupIdx >= 0 && groupIdx < state.groups.length) {
+                      const currentGroup = state.groups[groupIdx];
+                      // Check if group is not complete and current match index is valid
+                      if (!currentGroup.isComplete && currentGroup.currentMatchIdx < currentGroup.matches.length) {
+                           playableGroupFound = true;
+                      }
                  }
 
                  if (playableGroupFound) {
-                     console.log("Render -> Group Stream View");
-                     renderStreamView(); // Sets up camera, timer, ticker
-                     streamContainer.style.display = 'block'; // Show stream
+                      // Valid group match found -> show stream view
+                      console.log("Render -> Group Stream View");
+                      renderStreamView();
+                      streamContainer.style.display = 'block';
                  } else {
-                     // Current group isn't playable, check if tournament should proceed
-                     const allGroupsComplete = state.groups && state.groups.every(g => g.isComplete);
-                     if (allGroupsComplete) {
-                         console.log("Render: All groups complete -> finishing group stage...");
-                         finishGroupStage(); // This will change state.phase and call render() again
-                         // Don't display anything yet, wait for the next render cycle
-                     } else {
-                         console.warn("Render: Group phase, current index invalid, but not all groups complete. Advancing group (or error state).");
-                          // Attempt to find the next playable group
-                          let nextGroupIdx = -1;
-                          if(state.groups) {
-                              for(let i = 0; i < state.groups.length; i++) {
-                                   const group = state.groups[i];
-                                   if(group && !group.isComplete) {
-                                        nextGroupIdx = i;
-                                        break;
-                                   }
-                              }
-                          }
-                          if (nextGroupIdx !== -1) {
-                               state.currentGroupIdx = nextGroupIdx;
-                               console.log(`Advanced to next playable group: ${nextGroupIdx}`);
-                               saveState();
-                               render(); // Re-render with the new group index
-                          } else {
-                               console.error("Render: Stuck in group phase - no playable group found, but not all complete?");
-                               renderCreateForm(appDiv); // Fallback to creation form
-                               appDiv.style.display = 'flex';
-                          }
-                     }
+                      // No playable group match at current indices. Are all groups done?
+                      const allGroupsComplete = state.groups.every(g => g.isComplete);
+                      if (allGroupsComplete) {
+                          // All groups finished -> transition to playoff selection
+                           if (state.phase === 'group') { // Ensure we haven't already transitioned
+                                console.log("Render: All groups complete -> Transitioning to Playoff Selection...");
+                                finishGroupStage(); // This changes state.phase and saves state
+                                // finishGroupStage calls saveState and render() itself. Avoid double render.
+                                return; // Exit render early as finishGroupStage will call it again
+                           } else {
+                                // Should not happen if logic is correct, maybe stuck?
+                                console.warn("Render: Group phase ended, but state is not 'group'. Stuck? Fallback.");
+                                renderCreateForm(appDiv); // Fallback to setup
+                                appDiv.style.display = 'flex';
+                           }
+                      } else {
+                          // Current group/match index invalid, but not all groups done.
+                          // This indicates an issue, maybe state wasn't advanced correctly.
+                          // Try to find the next available group match? (More complex logic)
+                          // For now, fallback to setup/error state.
+                          console.warn("Render: Group phase, current index invalid, but not all groups complete. State potentially inconsistent. Fallback.");
+                          renderGroupStandings(appDiv, state.groups[groupIdx] || state.groups[0]); // Show last/first group standings?
+                          appDiv.appendChild(div('p','','Error: Could not find next match.'));
+                          appDiv.style.display = 'flex';
+                          // Could add a button to try and manually advance state here.
+                      }
                  }
             } else if (state.phase === 'playoff_selection') {
+                 // Ready to start playoffs -> show qualifier list and start button
                  console.log("Render -> Playoff Selection Screen");
-                 renderPlayoffSelection(appDiv);
-                 const startButton = btn("Start First Playoff Match");
-                 startButton.style.marginTop = '1rem';
-                 startButton.id = 'start-playoff-btn'; // Use ID to prevent duplicates if re-rendered
-                 startButton.onclick = () => {
-                     if (state.phase === 'playoff_selection' && state.playoffRounds && state.playoffRounds.length > 0 && state.playoffRounds[0].length > 0) {
-                         state.phase = 'playoff';
-                         state.currentPlayoffRoundIdx = 0;
-                         state.currentPlayoffMatchIdx = 0;
-                         console.log("Starting first playoff match.");
-                         saveState();
-                         render(); // Re-render to show the stream view
-                     } else {
-                         console.error("Cannot start playoffs: Playoff data not ready or empty first round.");
-                         alert("Error: Playoff data missing or invalid.");
-                     }
-                 };
-                 // Only add the button if it doesn't exist
+                 renderPlayoffSelection(appDiv); // Renders qualifiers list and viz
+                 // Check if start button already exists to avoid duplicates
                  if (!el('start-playoff-btn')) {
-                     appDiv.appendChild(startButton);
+                     const startButton = btn("Start First Playoff Match");
+                     startButton.id = 'start-playoff-btn'; // Assign ID for check
+                     startButton.style.marginTop = '1rem';
+                     startButton.onclick = () => {
+                          // Validate playoff state before starting
+                          if (state.phase === 'playoff_selection' && state.playoffRounds && state.playoffRounds.length > 0 && state.playoffRounds[0].length > 0) {
+                               state.phase = 'playoff'; // Change phase
+                               state.currentPlayoffRoundIdx = 0; // Start at round 0
+                               state.currentPlayoffMatchIdx = 0; // Start at match 0
+                               saveState();
+                               render(); // Re-render to show the first playoff match stream
+                          } else {
+                               console.error("Playoff state not ready to start. Qualifiers/Rounds missing?");
+                               alert("Error: Playoff data seems incomplete. Cannot start.");
+                          }
+                     };
+                     appDiv.appendChild(startButton); // Add the button
                  }
-                 appDiv.style.display = 'flex';
+                 appDiv.style.display = 'flex'; // Show the selection view
             } else {
-                console.error("Render: Unknown or invalid state phase:", state ? state.phase : 'null', "-> Fallback to create form.");
-                clearState(); // Clear potentially corrupt state
+                // Unknown state phase -> fallback to setup form
+                console.error("Render: Unknown state phase:", state ? state.phase : 'null', "-> Fallback to Create Form");
                 renderCreateForm(appDiv);
                 appDiv.style.display = 'flex';
             }
         }
 
-        // --- Setup ---
-        function renderCreateForm(app) { /* ... unchanged ... */ app.innerHTML = ''; const card = div('div', 'card'); const settingsCont = div('div'); const listCont = div('div'); const addBtn = btn('Add Player'); const startBtn = btn('Start Tournament'); startBtn.style.marginTop = '1rem'; const resetBtn = btn('Clear Saved Data', 'secondary'); resetBtn.style.marginLeft = '1rem'; resetBtn.style.marginTop = '1rem'; const groupSizeRow = div('div', 'settings-row'); groupSizeRow.innerHTML = `<label for="maxGroupSizeInput">Max Players per Group:</label><input type="number" id="maxGroupSizeInput" min="2" value="4" class="player-input" style="width: 60px; flex-grow: 0;">`; const timerRow = div('div', 'settings-row'); const currentConfigDuration = (state && state.timerConfig && state.timerConfig.durationMinutes) ? state.timerConfig.durationMinutes : 5; timerRow.innerHTML = `<label for="matchDurationInput">Match Length (minutes):</label><input type="number" id="matchDurationInput" min="1" value="${currentConfigDuration}" class="player-input" style="width: 60px; flex-grow: 0;">`; settingsCont.append(groupSizeRow, timerRow); card.append(div('h2', 'section-title', 'New Tournament Setup'), settingsCont, div('h3', 'group-title', 'Players'), listCont); const buttonRow = div('div'); buttonRow.style.marginTop = '1rem'; buttonRow.append(addBtn, startBtn, resetBtn); card.append(buttonRow); app.append(card); let players = []; function refreshPlayerList() { listCont.innerHTML = ''; players.forEach((p, i) => { const row = div('div', 'player-row'); const dot = div('div', 'player-color-static'); dot.style.background = p.color; dot.onclick = () => { p.color = randomColor(); dot.style.background = p.color; inpColor.value = p.color; }; const inpName = document.createElement('input'); inpName.placeholder = 'Name'; inpName.className = 'player-input'; inpName.value = p.name; inpName.oninput = e => p.name = e.target.value; const inpColor = document.createElement('input'); inpColor.type = 'color'; inpColor.value = p.color; inpColor.oninput = e => { p.color = e.target.value; dot.style.background = p.color; }; const del = btn('x', 'secondary icon-button'); del.style.width='32px'; del.style.height='32px'; del.style.fontSize='1rem'; del.onclick = () => { players.splice(i, 1); refreshPlayerList(); }; row.append(dot, inpName, inpColor, del); listCont.append(row); }); } addBtn.onclick = () => { players.push({ id: 'P' + Date.now() + players.length, name: `Player ${players.length + 1}`, color: randomColor() }); refreshPlayerList(); }; startBtn.onclick = () => { const cleanPlayers = players.filter(p => p.name && p.name.trim()); const maxGroupSize = parseInt(el('maxGroupSizeInput').value, 10); const matchDuration = parseInt(el('matchDurationInput').value, 10); if (cleanPlayers.length < 2) { alert('Need at least 2 named players'); return; } if (isNaN(maxGroupSize) || maxGroupSize < 2) { alert('Max players per group must be at least 2'); return; } if (isNaN(matchDuration) || matchDuration < 1) { alert('Match duration must be at least 1 minute.'); return; } const timerConfig = { durationMinutes: matchDuration, timeRemaining: matchDuration * 60, isPaused: false, isActive: false }; startTournament(cleanPlayers, maxGroupSize, timerConfig); }; resetBtn.onclick = () => { if(confirm('Really clear all saved tournament data?')) { clearState(); render(); } }; refreshPlayerList(); }
-        function startTournament(initialPlayers, maxGroupSize, timerConfig) { /* ... unchanged ... */ shuffle(initialPlayers); const groupsData = []; for (let i = 0; i < initialPlayers.length; i += maxGroupSize) { groupsData.push(initialPlayers.slice(i, i + maxGroupSize)); } if (groupsData.length > 1 && groupsData[groupsData.length - 1].length === 1) { const lastGroup = groupsData.pop(); lastGroup.forEach((player, index) => groupsData[index % groupsData.length].push(player)); } const finalGroups = groupsData.map((groupPlayers, index) => { const playersInGroup = groupPlayers.map(p => ({ ...p, points: 0, played: 0, wins: 0, draws: 0, losses: 0, goalsFor: 0, goalsAgainst: 0 })); return { id: index + 1, players: playersInGroup, matches: generateMatches(playersInGroup), currentMatchIdx: 0, isComplete: false }; }); finalGroups.forEach(group => shuffle(group.matches)); state = { phase: 'group', groups: finalGroups, currentGroupIdx: 0, timerConfig: timerConfig, playoffQualifiers: [], playoffRounds: [], currentPlayoffRoundIdx: -1, currentPlayoffMatchIdx: -1, champion: null, lastCompletedMatchInfo: null // Initialize ticker info holder }; console.log("Tournament Started. Initial State:", JSON.parse(JSON.stringify(state))); saveState(); render(); }
 
-        // --- Group Stage ---
-        function recordScore(group, p1Idx, p2Idx, score1, score2) { /* ... unchanged ... */ const p1 = group.players[p1Idx]; const p2 = group.players[p2Idx]; if(isNaN(score1) || isNaN(score2) || !p1 || !p2) { console.error("Invalid data for recordScore"); return; } p1.played++; p2.played++; p1.goalsFor += score1; p1.goalsAgainst += score2; p2.goalsFor += score2; p2.goalsAgainst += score1; if (score1 > score2) { p1.wins++; p1.points += 3; p2.losses++; } else if (score2 > score1) { p2.wins++; p2.points += 3; p1.losses++; } else { p1.draws++; p1.points += 1; p2.draws++; p2.points += 1; } group.matches[group.currentMatchIdx].score = [score1, score2]; group.currentMatchIdx++; if (group.currentMatchIdx >= group.matches.length) { group.isComplete = true; console.log(`Group ${group.id} completed.`); } }
+        // --- Setup Form Rendering ---
+        function renderCreateForm(app) {
+             app.innerHTML = ''; // Clear previous content
+             const card = div('div', 'card');
 
-        // --- Playoff Setup ---
-        function finishGroupStage() { /* ... unchanged ... */ console.log("Finishing group stage..."); state.phase = 'playoff_selection'; let groupWinners = []; let allRunnersUp = []; let addedRunnerUp = null; state.groups.forEach(group => { const sortedPlayers = [...group.players].sort(comparePlayers); if(sortedPlayers.length > 0) groupWinners.push({...sortedPlayers[0], sourceGroup: group.id}); if(sortedPlayers.length > 1) allRunnersUp.push({...sortedPlayers[1], sourceGroup: group.id, points: sortedPlayers[1].points, gd: sortedPlayers[1].goalsFor - sortedPlayers[1].goalsAgainst, gf: sortedPlayers[1].goalsFor }); }); let playoffQualifiers = [...groupWinners]; // Need an even number for playoffs if (groupWinners.length > 0 && groupWinners.length % 2 !== 0 && allRunnersUp.length > 0) { allRunnersUp.sort(comparePlayers); // Sort runners-up by same criteria const bestRunnerUp = allRunnersUp[0]; if (!playoffQualifiers.some(p => p.id === bestRunnerUp.id)) { // Avoid adding duplicate if winner was also best runner-up somehow playoffQualifiers.push(bestRunnerUp); addedRunnerUp = bestRunnerUp; console.log("Added best runner-up:", bestRunnerUp.name); } else { console.log("Best runner-up already qualified as winner."); } } // If still odd after adding best runner-up (e.g., 3 groups -> 3 winners + 1 runner-up = 4), we are good. // If we had 5 groups -> 5 winners. Adding best runner-up -> 6. Good. // If we had 2 groups -> 2 winners. Even. Good. // If we had 4 groups -> 4 winners. Even. Good. state.playoffQualifiers = playoffQualifiers; startPlayoffs(groupWinners, addedRunnerUp); // StartPlayoffs uses state.playoffQualifiers console.log("Group stage finished, state prepared for playoff selection. Qualifiers:", state.playoffQualifiers.map(p=>p.name)); saveState(); render(); // Re-render to show playoff selection screen }
-        function startPlayoffs(groupWinners, addedRunnerUp) { /* ... unchanged ... */ console.log("Setting up playoff bracket..."); const qualifiers = [...state.playoffQualifiers]; if(qualifiers.length < 2) { console.error("Not enough qualifiers for playoffs!"); state.phase='completed'; state.champion = qualifiers.length === 1 ? qualifiers[0] : null; return; } shuffle(qualifiers); const firstRoundMatches = []; let remainingQualifiers = [...qualifiers]; // Seeding attempt (Best winner vs Best runner-up) - Optional, requires careful index handling after shuffle/splice. Simple random pairing is more robust. let matchCounter = 0; while (remainingQualifiers.length >= 2) { const p1 = remainingQualifiers.pop(); const p2 = remainingQualifiers.pop(); firstRoundMatches.push({ p1, p2, score: null, winner: null, roundIdx: 0, matchIdx: matchCounter++, liveScore: [0,0] }); } if(remainingQualifiers.length === 1) { console.warn("Odd number of qualifiers, last one gets a BYE? Not implemented - should be handled by qualifier selection logic."); // This case should ideally be prevented by finishGroupStage logic } state.playoffRounds = [firstRoundMatches]; state.currentPlayoffRoundIdx = -1; // Will be set to 0 when user clicks 'Start Playoffs' state.currentPlayoffMatchIdx = -1; console.log("Playoff bracket generated:", state.playoffRounds); }
+             const settingsCont = div('div');
+             settingsCont.append(div('h3', 'group-title', 'Tournament Settings'));
 
-        // --- Playoff Gameplay ---
-        function recordPlayoffScore(roundIdx, matchIdx, score1, score2) { /* ... unchanged ... */ const match = state.playoffRounds[roundIdx][matchIdx]; match.score = [score1, score2]; match.winner = (score1 > score2) ? match.p1 : match.p2; console.log(`Playoff R${roundIdx+1} M${matchIdx+1} Result: ${match.p1.name} ${score1} - ${score2} ${match.p2.name}. Winner: ${match.winner.name}`); const currentRound = state.playoffRounds[roundIdx]; const isLastMatchOfRound = (matchIdx === currentRound.length - 1); if (isLastMatchOfRound) { const winners = currentRound.map(m => m.winner).filter(Boolean); if (winners.length === 1) { finishTournament(winners[0]); return; // Tournament over! } else if (winners.length > 1) { console.log("Generating next playoff round..."); generateNextRound(winners); state.currentPlayoffRoundIdx++; // Advance to the next round index state.currentPlayoffMatchIdx = 0; // Start at the first match of the new round console.log(`Advanced to Playoff Round ${state.currentPlayoffRoundIdx + 1}, Match ${state.currentPlayoffMatchIdx + 1}`); } else { console.error("No winners found at end of round?"); // Should not happen state.currentPlayoffMatchIdx++; // Cautiously advance index anyway? Or handle error. For now, just log. } } else { state.currentPlayoffMatchIdx++; // Advance to the next match in the same round console.log(`Advanced to Playoff Round ${state.currentPlayoffRoundIdx + 1}, Match ${state.currentPlayoffMatchIdx + 1}`); } }
-        function generateNextRound(winners) { /* ... unchanged ... */ console.log(`Generating round ${state.playoffRounds.length + 1} with winners:`, winners.map(w=>w.name)); const nextRoundMatches = []; const remainingWinners = [...winners]; shuffle(remainingWinners); let matchCounter = 0; while (remainingWinners.length >= 2) { const p1 = remainingWinners.pop(); const p2 = remainingWinners.pop(); nextRoundMatches.push({ p1, p2, score: null, winner: null, roundIdx: state.playoffRounds.length, matchIdx: matchCounter++, liveScore: [0,0] }); } state.playoffRounds.push(nextRoundMatches); console.log("Next round generated:", nextRoundMatches); }
+             // Group Size Setting
+             const groupSizeRow = div('div', 'settings-row');
+             groupSizeRow.innerHTML = `<label for="maxGroupSizeInput">Max Players per Group:</label><input type="number" id="maxGroupSizeInput" min="2" value="4" class="player-input" style="width: 60px; flex-grow: 0;">`;
+
+             // Timer Duration Setting
+             const timerRow = div('div', 'settings-row');
+             // Default or load existing duration
+             const currentConfigDuration = (state && state.timerConfig && state.timerConfig.durationMinutes) ? state.timerConfig.durationMinutes : 5;
+             timerRow.innerHTML = `<label for="matchDurationInput">Match Length (minutes):</label><input type="number" id="matchDurationInput" min="1" value="${currentConfigDuration}" class="player-input" style="width: 60px; flex-grow: 0;">`;
+
+             settingsCont.append(groupSizeRow, timerRow);
+
+             // Player List Area
+             const listCont = div('div');
+             listCont.append(div('h3', 'group-title', 'Players'));
+             const playerListDiv = div('div'); // Container for player rows
+             listCont.append(playerListDiv);
 
 
-        // --- Stream View Rendering (NEW LAYOUT, Ticker Start) ---
-        function renderStreamView() {
-            setupCamera(); // Start camera feed
-            startTicker(); // Start the previous match ticker animation cycle
+             const addBtn = btn('Add Player');
+             const startBtn = btn('Start Tournament', 'secondary');
+             startBtn.style.marginLeft = '1rem';
 
-            let match, p1, p2, roundInfoText = "Loading Match...";
-            let score1 = 0, score2 = 0;
+             card.append(settingsCont, listCont, addBtn, startBtn);
+             app.append(card);
 
-            try { // Wrap state access in try-catch
-                if (state.phase === 'group') {
-                    const group = state.groups[state.currentGroupIdx];
-                    match = group.matches[group.currentMatchIdx];
-                    if (!match) throw new Error("Group match data missing.");
-                    p1 = group.players[match.p1Idx];
-                    p2 = group.players[match.p2Idx];
-                    if (!p1 || !p2) throw new Error("Group player data missing.");
-                    roundInfoText = `Group ${group.id} - Match ${group.currentMatchIdx + 1}/${group.matches.length}`;
-                } else { // Playoff
-                    const roundIdx = state.currentPlayoffRoundIdx;
-                    const matchIdx = state.currentPlayoffMatchIdx;
-                    const round = state.playoffRounds[roundIdx];
-                    match = round[matchIdx];
-                     if (!match || !match.p1 || !match.p2) throw new Error("Playoff match data missing.");
-                    p1 = match.p1;
-                    p2 = match.p2;
-                    const numRounds = state.playoffRounds.length;
-                    const isFinal = round.length === 1 && state.playoffRounds.length > 1; // Rough check for final
-                    const isSemi = round.length === 2 && state.playoffRounds.length > 2; // Rough check for semi
-                    let roundName = `Playoffs R${roundIdx + 1}`;
-                    if(isFinal) roundName = "Final";
-                    else if (isSemi) roundName = "Semi-Final";
-                    roundInfoText = `${roundName} - Match ${matchIdx + 1}/${round.length}`;
-                }
+             let players = []; // Local array for this form instance
 
-                if (!match.liveScore) match.liveScore = [0, 0]; // Ensure liveScore exists
-                score1 = match.liveScore[0];
-                score2 = match.liveScore[1];
+             function refreshPlayerList() {
+                  playerListDiv.innerHTML = ''; // Clear only the list part
+                  if (players.length === 0) {
+                    playerListDiv.innerHTML = '<p style="opacity: 0.7; margin: 0.5rem 0;">Add at least 2 players.</p>';
+                  }
+                  players.forEach((p, i) => {
+                       const row = div('div', 'player-row');
+                       // Color indicator/picker
+                       const dot = div('div', 'player-color-static');
+                       dot.style.background = p.color;
+                       dot.title = "Click to randomize color";
+                       dot.onclick = () => {
+                            p.color = randomColor();
+                            dot.style.background = p.color;
+                            inpColor.value = p.color; // Sync picker
+                       };
+                       // Name input
+                       const inpName = document.createElement('input');
+                       inpName.placeholder = 'Player Name';
+                       inpName.className = 'player-input';
+                       inpName.value = p.name;
+                       inpName.oninput = e => p.name = e.target.value.trim(); // Trim whitespace
+                       inpName.required = true; // Basic validation hint
+                       // Color picker input
+                       const inpColor = document.createElement('input');
+                       inpColor.type = 'color';
+                       inpColor.value = p.color;
+                       inpColor.title = "Choose player color";
+                       inpColor.oninput = e => {
+                            p.color = e.target.value;
+                            dot.style.background = p.color; // Sync indicator
+                       };
+                       // Delete button
+                       const del = btn('✖', 'secondary icon-button'); // Use icon/symbol?
+                       del.title = "Remove player";
+                       del.style.width = '32px'; // Make smaller
+                       del.style.height = '32px';
+                       del.style.fontSize = '1rem';
+                       del.onclick = () => {
+                            players.splice(i, 1); // Remove from local array
+                            refreshPlayerList(); // Redraw list
+                       };
+                       row.append(dot, inpName, inpColor, del);
+                       playerListDiv.append(row); // Append to the list container
+                  });
+             }
 
-            } catch (error) {
-                 console.error("Error getting match data for stream view:", error, "State:", JSON.parse(JSON.stringify(state)));
-                 roundInfoText = "Error Loading Match";
-                 // Don't return, try to render placeholders
-                 p1 = { name: "Error", color: "#cccccc" };
-                 p2 = { name: "Error", color: "#cccccc" };
-                 score1 = 0; score2 = 0;
-            }
+             addBtn.onclick = () => {
+                  players.push({
+                       id: 'P' + Date.now() + players.length, // Simple unique ID
+                       name: '',
+                       color: randomColor()
+                  });
+                  refreshPlayerList(); // Update display
+                  // Focus the new player's name input
+                  const inputs = playerListDiv.querySelectorAll('.player-input');
+                  if (inputs.length > 0) {
+                     inputs[inputs.length-1].focus();
+                  }
+             };
 
-            // --- Populate Overlay Elements ---
-            el('match-info').textContent = roundInfoText;
-            el('player1-name').textContent = p1.name; el('player1-name').style.color = p1.color;
-            el('player1-score').textContent = score1;
-            el('player2-name').textContent = p2.name; el('player2-name').style.color = p2.color;
-            el('player2-score').textContent = score2;
+             startBtn.onclick = () => {
+                  // Validate inputs before starting
+                  const cleanPlayers = players.filter(p => p.name.trim().length > 0); // Ensure names are not empty
+                  const maxGroupSizeInput = el('maxGroupSizeInput');
+                  const matchDurationInput = el('matchDurationInput');
 
-            // Timer - Start if not already active, or just update display
-            if (!state.timerConfig.isActive) {
-                // Use remaining time if it exists and > 0, otherwise use full duration
-                const initialTime = (state.timerConfig.timeRemaining > 0) ? state.timerConfig.timeRemaining : state.timerConfig.durationMinutes * 60;
-                startTimer(initialTime);
-            } else {
-                updateTimerDisplay(); // Ensure display is current
-            }
+                  const maxGroupSize = parseInt(maxGroupSizeInput.value, 10);
+                  const matchDuration = parseInt(matchDurationInput.value, 10);
 
-            // --- Event Listeners (Ensure elements exist) ---
-            const p1GoalBtn = el('player1-goal-button');
-            const p2GoalBtn = el('player2-goal-button');
-            const pauseResumeBtn = el('pause-resume-button');
-            const exitBtn = el('exit-stream-button');
+                  // Validation checks
+                  if (cleanPlayers.length < 2) {
+                       alert('Please add at least 2 players with names.');
+                       return;
+                  }
+                  if (isNaN(maxGroupSize) || maxGroupSize < 2) {
+                       alert('Max players per group must be a number and at least 2.');
+                       maxGroupSizeInput.focus();
+                       return;
+                  }
+                  if (isNaN(matchDuration) || matchDuration < 1) {
+                       alert('Match length must be a number and at least 1 minute.');
+                       matchDurationInput.focus();
+                       return;
+                  }
 
-             // Remove previous listeners? Not strictly necessary if re-assigning onclick
-             if(p1GoalBtn) p1GoalBtn.onclick = () => incrementScore('p1'); else console.error("P1 Goal Btn not found");
-             if(p2GoalBtn) p2GoalBtn.onclick = () => incrementScore('p2'); else console.error("P2 Goal Btn not found");
+                  // Prepare timer config
+                  const timerConfig = {
+                       durationMinutes: matchDuration,
+                       timeRemaining: matchDuration * 60, // Initial time
+                       isPaused: false,
+                       isActive: false // Timer starts when match view renders
+                  };
 
-             if(pauseResumeBtn) {
-                 // Set initial text based on current state
-                 pauseResumeBtn.textContent = state.timerConfig.isPaused ? '▶' : '❚❚';
-                 // Assign click handler
-                 pauseResumeBtn.onclick = () => {
-                     if (!state || !state.timerConfig) return; // Safety check
-                     if (state.timerConfig.isPaused) {
-                         resumeTimer();
-                     } else {
-                         pauseTimer();
-                     }
-                 };
-             } else { console.error("Pause Btn not found"); }
+                  // Call the function to initialize the tournament state
+                  startTournament(cleanPlayers, maxGroupSize, timerConfig);
+             };
 
-             if(exitBtn) {
-                 exitBtn.onclick = () => {
-                     // Check for playoff draw first - requires score change
-                     if (state.phase === 'playoff' && match && match.liveScore && match.liveScore[0] === match.liveScore[1]) {
-                          alert("Playoff Draw!\nIncrement score for the winner using '+', then click 'Exit Match' again.");
-                          return; // Don't finalize yet
-                     }
+             // Initial call to display the (empty) list
+             refreshPlayerList();
+        }
 
-                     // Check if timer is running and needs confirmation
-                     if (state.timerConfig.isActive && state.timerConfig.timeRemaining > 0 && !state.timerConfig.isPaused) {
-                         if (!confirm(`Timer has ${state.timerConfig.timeRemaining}s left!\nFinalize match now with current score (${match.liveScore[0]}-${match.liveScore[1]})?`)) {
-                             return; // User cancelled
+
+        // --- Tournament Initialization Logic ---
+        function startTournament(initialPlayers, maxGroupSize, timerConfig) {
+             console.log(`Starting tournament with ${initialPlayers.length} players, max group size ${maxGroupSize}.`);
+             shuffle(initialPlayers); // Randomize player order for group distribution
+
+             const groupsData = [];
+             // Distribute players into groups
+             for (let i = 0; i < initialPlayers.length; i += maxGroupSize) {
+                  groupsData.push(initialPlayers.slice(i, i + maxGroupSize));
+             }
+
+             // Handle potential small last group (merge with others if possible)
+             if (groupsData.length > 1 && groupsData[groupsData.length - 1].length === 1) {
+                  console.log("Single player in last group, merging...");
+                  const lastGroup = groupsData.pop();
+                  // Distribute the single player somewhat evenly into previous groups
+                  groupsData[0].push(lastGroup[0]); // Add to the first group for simplicity
+                  // More complex logic could round-robin distribute
+             } else if (groupsData.length > 1 && groupsData[groupsData.length - 1].length < Math.ceil(maxGroupSize / 2) && groupsData[groupsData.length-1].length > 0) {
+                 // Optional: If last group is significantly smaller than others, merge it
+                 console.log("Last group is small, merging players into other groups.");
+                 const lastGroupPlayers = groupsData.pop();
+                 lastGroupPlayers.forEach((player, index) => {
+                     // Distribute players round-robin into the remaining groups
+                     groupsData[index % groupsData.length].push(player);
+                 });
+             }
+
+
+             // Create final group structures with match generation
+             const finalGroups = groupsData.map((groupPlayers, index) => {
+                  // Initialize player stats within the group object
+                  const playersInGroup = groupPlayers.map(p => ({
+                       ...p, // Spread player data (id, name, color)
+                       points: 0, played: 0, wins: 0, draws: 0, losses: 0,
+                       goalsFor: 0, goalsAgainst: 0
+                  }));
+                  // Generate all pairwise matches for the group
+                  const matches = generateMatches(playersInGroup);
+                  shuffle(matches); // Randomize match order within the group
+
+                  return {
+                       id: index + 1, // Group ID (1-based)
+                       players: playersInGroup,
+                       matches: matches,
+                       currentMatchIdx: 0, // Start at the first match
+                       isComplete: false, // Mark group as not finished
+                       lastMatch: null // Store result of last completed match in this group (optional)
+                  };
+             });
+
+             // Set the initial global state for the tournament
+             state = {
+                  phase: 'group', // Start in group stage
+                  groups: finalGroups,
+                  currentGroupIdx: 0, // Start with the first group
+                  timerConfig: timerConfig, // Store timer settings
+                  playoffQualifiers: [], // Will hold players advancing to playoffs
+                  playoffRounds: [], // Will hold playoff match structures
+                  currentPlayoffRoundIdx: -1, // No playoff round active yet
+                  currentPlayoffMatchIdx: -1, // No playoff match active yet
+                  champion: null, // No champion yet
+                  lastCompletedMatchInfo: null // For the ticker display
+             };
+
+             console.log("Tournament State Initialized:", JSON.parse(JSON.stringify(state)));
+             saveState(); // Persist the initial state
+             render(); // Render the first view (should be the first group match)
+        }
+
+        // --- Group Stage Logic ---
+        // Records the result of a completed group match and updates player stats
+        function recordScore(group, p1Idx, p2Idx, score1, score2) {
+             // Validate inputs
+             if (!group || !group.players || p1Idx < 0 || p1Idx >= group.players.length || p2Idx < 0 || p2Idx >= group.players.length || isNaN(score1) || isNaN(score2)) {
+                  console.error("recordScore: Invalid input provided.", { group, p1Idx, p2Idx, score1, score2 });
+                  return;
+             }
+
+             const p1 = group.players[p1Idx];
+             const p2 = group.players[p2Idx];
+
+             console.log(`Recording score for Group ${group.id}: ${p1.name} ${score1} - ${score2} ${p2.name}`);
+
+             // Update stats based on score
+             p1.played++; p2.played++;
+             p1.goalsFor += score1; p1.goalsAgainst += score2;
+             p2.goalsFor += score2; p2.goalsAgainst += score1;
+
+             if (score1 > score2) { // P1 wins
+                  p1.wins++; p1.points += 3;
+                  p2.losses++;
+             } else if (score2 > score1) { // P2 wins
+                  p2.wins++; p2.points += 3;
+                  p1.losses++;
+             } else { // Draw
+                  p1.draws++; p1.points += 1;
+                  p2.draws++; p2.points += 1;
+             }
+
+             // Mark the match as completed with the final score
+             if (group.currentMatchIdx < group.matches.length) {
+                group.matches[group.currentMatchIdx].score = [score1, score2];
+             } else {
+                console.warn(`Attempted to record score for match index ${group.currentMatchIdx}, but group only has ${group.matches.length} matches.`);
+             }
+
+             // Store this result as the 'last match' for the group (optional, might not be needed)
+             group.lastMatch = { p1Name: p1.name, p2Name: p2.name, score: [score1, score2] };
+
+             // Advance to the next match within the group
+             group.currentMatchIdx++;
+
+             // Check if the group is now complete
+             if (group.currentMatchIdx >= group.matches.length) {
+                  group.isComplete = true;
+                  console.log(`Group ${group.id} is complete.`);
+                  // Check if all groups are complete to potentially advance state
+                  const allGroupsComplete = state.groups.every(g => g.isComplete);
+                  if (allGroupsComplete) {
+                     console.log("All groups now complete.");
+                     // State advancement to playoff selection will happen in the render function
+                  } else {
+                     // Find the next group that isn't complete
+                     let nextGroupIdx = -1;
+                     for (let i = 0; i < state.groups.length; i++) {
+                         let checkIdx = (state.currentGroupIdx + 1 + i) % state.groups.length; // Round robin check
+                         if (!state.groups[checkIdx].isComplete) {
+                             nextGroupIdx = checkIdx;
+                             break;
                          }
                      }
-                     // Check if timer is paused or finished, less urgent confirmation
-                     else if (state.timerConfig.isActive && (state.timerConfig.isPaused || state.timerConfig.timeRemaining <= 0)) {
-                          if (!confirm(`Finalize match with current score (${match.liveScore[0]}-${match.liveScore[1]})?`)) {
-                               return; // User cancelled
-                          }
+                     if (nextGroupIdx !== -1) {
+                        console.log(`Advancing to next available group: ${nextGroupIdx + 1}`);
+                        state.currentGroupIdx = nextGroupIdx;
+                     } else {
+                        // This case should theoretically be covered by allGroupsComplete check, but log just in case.
+                        console.warn("Current group finished, but couldn't find next incomplete group. Logic error?");
                      }
-                     // If timer never started or already stopped (shouldn't happen normally here but maybe edge case)
-                     // else {
-                     //      if (!confirm(`Finalize match with current score (${match.liveScore[0]}-${match.liveScore[1]})?`)) {
-                     //          return; // User cancelled
-                     //      }
-                     // }
+                  }
+             } else {
+                console.log(`Advanced to Match ${group.currentMatchIdx + 1} in Group ${group.id}`);
+             }
 
-                     // If we got past the checks, finalize.
-                     finalizeMatch();
-                 };
-             } else { console.error("Exit Btn not found"); }
+             // State is saved in finalizeMatch after recordScore is called
         }
 
+        // --- Playoff Setup Logic ---
+        // Called when all group matches are complete
+        function finishGroupStage() {
+             console.log("Finishing group stage, determining playoff qualifiers...");
+             state.phase = 'playoff_selection'; // Update phase
+
+             let allQualifiers = [];
+
+             state.groups.forEach(group => {
+                  // Sort players within the group based on points, GD, GF, name
+                  const sortedPlayers = [...group.players].sort(comparePlayers);
+
+                  // Add top player(s) based on tournament rules (e.g., top 1 or 2)
+                  // Simple rule: Top player from each group qualifies
+                  if (sortedPlayers.length > 0) {
+                       allQualifiers.push({ ...sortedPlayers[0], sourceGroup: group.id });
+                  }
+                   // Example: Add top 2 if group size allows
+                   // if (sortedPlayers.length > 1) {
+                   //     allQualifiers.push({ ...sortedPlayers[1], sourceGroup: group.id });
+                   // }
+             });
+
+             // --- Advanced Rule: Add Best Runner(s)-up if needed ---
+             // Example: Ensure even number of qualifiers for bracket by adding best runner-up(s)
+             let bestRunnersUpToAdd = [];
+             if (allQualifiers.length < 2) {
+                console.warn("Not enough qualifiers from group winners (< 2). Playoffs cannot proceed.");
+                // Handle this case - maybe declare winner if only 1, or error
+                state.playoffQualifiers = []; // Clear qualifiers
+             } else if (allQualifiers.length % 2 !== 0) {
+                 console.log(`Odd number of qualifiers (${allQualifiers.length}), looking for best runner-up.`);
+                 let potentialRunnersUp = [];
+                 state.groups.forEach(group => {
+                      const sortedPlayers = [...group.players].sort(comparePlayers);
+                      if (sortedPlayers.length > 1) { // Check if runner-up exists
+                           // Ensure runner-up isn't already qualified (in case of identical stats with winner, unlikely but possible)
+                           if (!allQualifiers.some(q => q.id === sortedPlayers[1].id)) {
+                                potentialRunnersUp.push({ ...sortedPlayers[1], sourceGroup: group.id });
+                           }
+                      }
+                 });
+
+                 if (potentialRunnersUp.length > 0) {
+                      // Sort runners-up by the same criteria
+                      potentialRunnersUp.sort(comparePlayers);
+                      bestRunnersUpToAdd.push(potentialRunnersUp[0]); // Add the single best one
+                      console.log(`Adding best runner-up: ${potentialRunnersUp[0].name} from Group ${potentialRunnersUp[0].sourceGroup}`);
+                 } else {
+                      console.warn("Odd number of qualifiers, but no runners-up found to balance the bracket.");
+                      // Handle this? Maybe give a bye? For simplicity, we might proceed with odd number and handle in bracket generation
+                 }
+             }
+
+             // Combine winners and best runners-up
+             state.playoffQualifiers = [...allQualifiers, ...bestRunnersUpToAdd];
+
+             console.log("Playoff Qualifiers:", state.playoffQualifiers.map(p => p.name));
+
+             // Generate the playoff bracket structure (but don't start matches yet)
+             startPlayoffs(); // Generates state.playoffRounds
+
+             console.log("Group stage finished. State prepared for playoff selection screen.");
+             saveState(); // Save the state before rendering the selection screen
+             render(); // Re-render to show the playoff selection view
+        }
+
+        // Generates the playoff bracket structure based on qualifiers
+        function startPlayoffs() {
+             console.log("Setting up playoff bracket structure...");
+             const qualifiers = [...state.playoffQualifiers]; // Use the determined qualifiers
+
+             if (qualifiers.length < 2) {
+                  console.error("Cannot start playoffs: Fewer than 2 qualifiers.");
+                  // Handle this scenario - maybe declare winner if 1, or error
+                  if (qualifiers.length === 1) {
+                     finishTournament(qualifiers[0]); // Declare the single qualifier as champion
+                  }
+                  state.playoffRounds = [];
+                  return;
+             }
+
+             shuffle(qualifiers); // Randomize seeding for the first round
+
+             const firstRoundMatches = [];
+             let remainingQualifiers = [...qualifiers]; // Copy to modify
+
+             // --- Seeding Logic (Optional Refinement) ---
+             // Example: Seed best group winner vs added runner-up if applicable
+             // (Original code had a complex seeding attempt, simplifying here)
+             // Basic random pairing:
+             let matchCounter = 0;
+             while (remainingQualifiers.length >= 2) {
+                  const p1 = remainingQualifiers.pop(); // Take from end
+                  const p2 = remainingQualifiers.pop(); // Take from end
+                  firstRoundMatches.push({
+                       p1: p1,
+                       p2: p2,
+                       score: null,        // Final score (null until played)
+                       winner: null,       // Winner object (null until decided)
+                       roundIdx: 0,        // Round index (0 for first round)
+                       matchIdx: matchCounter++, // Index within the round
+                       liveScore: [0, 0]   // Score during the match
+                  });
+             }
+
+             // Handle a potential bye if there was an odd number of qualifiers
+             if (remainingQualifiers.length === 1) {
+                const byePlayer = remainingQualifiers[0];
+                console.log(`${byePlayer.name} gets a bye in the first round.`);
+                // How to represent a bye? Add a placeholder match or handle in next round generation?
+                // Option 1: Add a placeholder match (simpler for round structure)
+                 firstRoundMatches.push({
+                       p1: byePlayer,
+                       p2: { name: "BYE", id: "BYE", color: "#888" }, // Placeholder opponent
+                       score: [1, 0], // Auto-win score
+                       winner: byePlayer, // Auto-winner
+                       roundIdx: 0,
+                       matchIdx: matchCounter++,
+                       liveScore: [1, 0] // Reflect auto-win
+                 });
+                // Option 2: Handle directly in generateNextRound (more complex state)
+             }
+
+             state.playoffRounds = [firstRoundMatches]; // Add the first round to the state
+             state.currentPlayoffRoundIdx = -1; // Reset indices, playoffs haven't started playing
+             state.currentPlayoffMatchIdx = -1;
+
+             console.log("Playoff bracket generated:", JSON.parse(JSON.stringify(state.playoffRounds)));
+             // State saving and rendering happens in finishGroupStage
+        }
+
+
+        // --- Playoff Gameplay Logic ---
+        // Records the result of a completed playoff match
+        function recordPlayoffScore(roundIdx, matchIdx, score1, score2) {
+             // Validation
+             if (!state || !state.playoffRounds || roundIdx < 0 || roundIdx >= state.playoffRounds.length ||
+                 matchIdx < 0 || matchIdx >= state.playoffRounds[roundIdx].length || isNaN(score1) || isNaN(score2)) {
+                 console.error("recordPlayoffScore: Invalid input provided.", { roundIdx, matchIdx, score1, score2 });
+                 return;
+             }
+             // Ensure it's not a draw (should be handled by finalizeMatch)
+             if (score1 === score2) {
+                 console.error("recordPlayoffScore called with a draw score. This should not happen.");
+                 // Maybe re-alert or just log
+                 alert("Error: Playoff match cannot end in a draw. Please resolve score.");
+                 return;
+             }
+
+             const match = state.playoffRounds[roundIdx][matchIdx];
+
+             console.log(`Recording playoff score R${roundIdx + 1} M${matchIdx + 1}: ${match.p1.name} ${score1} - ${score2} ${match.p2.name}`);
+
+             // Set final score and determine winner
+             match.score = [score1, score2];
+             match.winner = (score1 > score2) ? match.p1 : match.p2;
+             console.log(`Winner: ${match.winner.name}`);
+
+             // --- Advance Playoff State ---
+             const currentRound = state.playoffRounds[roundIdx];
+             const isLastMatchOfRound = (matchIdx === currentRound.length - 1);
+
+             if (isLastMatchOfRound) {
+                  console.log(`Last match of Round ${roundIdx + 1} completed.`);
+                  // Check if the entire tournament is finished
+                  const winners = currentRound.map(m => m.winner).filter(Boolean); // Get all winners from this round
+
+                  if (winners.length === 1) {
+                       // This was the final match
+                       console.log("Tournament Final completed.");
+                       finishTournament(winners[0]); // Declare champion
+                       // finishTournament will change state.phase, save, and render
+                       return; // Stop further processing here
+                  } else if (winners.length > 1) {
+                       // More than one winner, generate the next round
+                       console.log(`Generating Round ${roundIdx + 2}`);
+                       generateNextRound(winners); // Creates state.playoffRounds[roundIdx + 1]
+                       // Advance state to the start of the newly generated round
+                       state.currentPlayoffRoundIdx++;
+                       state.currentPlayoffMatchIdx = 0;
+                       console.log(`Advanced state to Round ${state.currentPlayoffRoundIdx + 1}, Match 1`);
+                  } else {
+                       // No winners found? Should not happen if matches have winners.
+                       console.error("Error: Last match of round completed, but no winners found?");
+                       // Attempt to just advance match index? Or halt?
+                       state.currentPlayoffMatchIdx++; // Cautiously advance index, but likely indicates error
+                  }
+             } else {
+                  // Not the last match of the round, simply advance to the next match
+                  state.currentPlayoffMatchIdx++;
+                  console.log(`Advanced state to Round ${state.currentPlayoffRoundIdx + 1}, Match ${state.currentPlayoffMatchIdx + 1}`);
+             }
+             // State saving happens in finalizeMatch after this is called
+        }
+
+
+        // Generates the next round of playoff matches from the winners of the previous round
+        function generateNextRound(winners) {
+             const nextRoundIndex = state.playoffRounds.length; // Index for the new round
+             console.log(`Generating Playoff Round ${nextRoundIndex + 1} with ${winners.length} winners.`);
+
+             const nextRoundMatches = [];
+             const remainingWinners = [...winners]; // Copy to modify
+             shuffle(remainingWinners); // Randomize pairings for the next round
+
+             let matchCounter = 0;
+             while (remainingWinners.length >= 2) {
+                  const p1 = remainingWinners.pop();
+                  const p2 = remainingWinners.pop();
+                  nextRoundMatches.push({
+                       p1: p1,
+                       p2: p2,
+                       score: null,
+                       winner: null,
+                       roundIdx: nextRoundIndex, // Store the index of this new round
+                       matchIdx: matchCounter++,
+                       liveScore: [0, 0]
+                  });
+             }
+
+             // Handle potential bye if odd number of winners advanced (e.g., from previous bye)
+             if (remainingWinners.length === 1) {
+                  const byePlayer = remainingWinners[0];
+                  console.log(`${byePlayer.name} gets a bye in Round ${nextRoundIndex + 1}.`);
+                   // Add placeholder match for the bye
+                   nextRoundMatches.push({
+                         p1: byePlayer,
+                         p2: { name: "BYE", id: "BYE", color: "#888" },
+                         score: [1, 0],
+                         winner: byePlayer,
+                         roundIdx: nextRoundIndex,
+                         matchIdx: matchCounter++,
+                         liveScore: [1, 0]
+                   });
+             }
+
+             // Add the newly created round to the state
+             state.playoffRounds.push(nextRoundMatches);
+             console.log(`Generated ${nextRoundMatches.length} matches for Round ${nextRoundIndex + 1}.`);
+             // State advancement (round/match index) happens in recordPlayoffScore after this call
+        }
+
+        // --- Stream View Rendering ---
+        function renderStreamView() {
+             console.log("Rendering Stream View...");
+             setupCamera(); // Start camera feed
+             startTicker(); // Start the animated ticker
+
+             let match, p1, p2, roundInfoText = "";
+             let score1 = 0, score2 = 0;
+             let currentMatchValid = false;
+
+             try {
+                 // Determine current match based on state phase
+                 if (state.phase === 'group') {
+                      const groupIdx = state.currentGroupIdx;
+                      const group = state.groups[groupIdx];
+                      const matchIdx = group.currentMatchIdx;
+                      match = group.matches[matchIdx];
+                      p1 = group.players[match.p1Idx];
+                      p2 = group.players[match.p2Idx];
+                      roundInfoText = `Group ${group.id} - Match ${matchIdx + 1}/${group.matches.length}`;
+                 } else { // Playoff
+                      const roundIdx = state.currentPlayoffRoundIdx;
+                      const matchIdx = state.currentPlayoffMatchIdx;
+                      const round = state.playoffRounds[roundIdx];
+                      match = round[matchIdx];
+                      p1 = match.p1;
+                      p2 = match.p2;
+                      // Determine round name (e.g., Quarter-Finals, Semi-Finals, Final)
+                      const numRounds = Math.ceil(Math.log2(state.playoffQualifiers.length || 2)); // Estimate total rounds
+                      let roundName = `Round ${roundIdx + 1}`;
+                      if (round.length === 1 && state.playoffRounds.length > 1) roundName = "Final";
+                      else if (round.length === 2 && roundIdx === numRounds - 2) roundName = "Semi-Finals";
+                      else if (round.length === 4 && roundIdx === numRounds - 3) roundName = "Quarter-Finals";
+                      // Add more specific names if needed based on number of qualifiers/rounds
+                      roundInfoText = `${roundName} - Match ${matchIdx + 1}/${round.length}`;
+                 }
+
+                 // Ensure liveScore exists and retrieve current scores
+                 if (!match.liveScore || match.liveScore.length !== 2) {
+                    match.liveScore = [0, 0]; // Initialize if missing
+                 }
+                 score1 = match.liveScore[0];
+                 score2 = match.liveScore[1];
+                 currentMatchValid = true; // Flag that data was loaded successfully
+
+             } catch (error) {
+                 console.error("Error getting match data for stream view:", error);
+                 roundInfoText = "Error Loading Match Data";
+                 // Keep p1/p2 potentially undefined or null
+                 p1 = { name: "Error", color: "#ff0000" };
+                 p2 = { name: "Error", color: "#ff0000" };
+             }
+
+             // --- Populate Overlay Elements ---
+             el('match-info').textContent = roundInfoText;
+
+             // Player 1 Info (handle potential errors)
+             el('player1-name').textContent = p1 ? p1.name : 'P1';
+             el('player1-name').style.color = p1 ? p1.color : '#ffffff'; // Use default white if no player data
+             el('player1-score').textContent = score1;
+
+             // Player 2 Info (handle potential errors)
+             el('player2-name').textContent = p2 ? p2.name : 'P2';
+             el('player2-name').style.color = p2 ? p2.color : '#ffffff';
+             el('player2-score').textContent = score2;
+
+
+             // --- Timer Setup ---
+             // Ensure timer is active if it should be
+             if (currentMatchValid && state.timerConfig && !state.timerConfig.isActive) {
+                  // Start timer only if it's not already active (e.g., first load of this match)
+                  // Use remaining time if available, otherwise full duration
+                  const timeToStart = state.timerConfig.timeRemaining > 0 ? state.timerConfig.timeRemaining : state.timerConfig.durationMinutes * 60;
+                  startTimer(timeToStart);
+             }
+             // Update display regardless of whether timer was just started or already running
+             updateTimerDisplay();
+
+
+             // --- Event Listeners (Re-attach/Ensure Correctness) ---
+             // It's generally safer to re-attach listeners each time view renders
+             // or use event delegation on a parent element. Direct attachment used here.
+
+             const p1GoalBtn = el('player1-goal-button');
+             const p2GoalBtn = el('player2-goal-button');
+             const pauseResumeBtn = el('pause-resume-button');
+             const exitBtn = el('exit-stream-button');
+
+             // Clear previous listeners if necessary (simple assignment overwrites)
+             p1GoalBtn.onclick = null;
+             p2GoalBtn.onclick = null;
+             pauseResumeBtn.onclick = null;
+             exitBtn.onclick = null;
+
+             if (currentMatchValid) { // Only enable controls if match loaded ok
+                // Player 1 Goal Button
+                if (p1GoalBtn) p1GoalBtn.onclick = () => incrementScore('p1');
+                else console.error("P1 Goal Btn not found");
+
+                // Player 2 Goal Button
+                if (p2GoalBtn) p2GoalBtn.onclick = () => incrementScore('p2');
+                else console.error("P2 Goal Btn not found");
+
+                // Pause/Resume Button
+                if (pauseResumeBtn) {
+                     pauseResumeBtn.onclick = () => {
+                          if (state.timerConfig.isPaused) {
+                               resumeTimer();
+                          } else {
+                               pauseTimer();
+                          }
+                     };
+                     // Set initial text based on state
+                     pauseResumeBtn.textContent = (state.timerConfig && state.timerConfig.isPaused) ? '▶' : '❚❚';
+                } else console.error("Pause Btn not found");
+
+                // Exit Button
+                if (exitBtn) {
+                     exitBtn.onclick = () => {
+                          // Confirmation logic
+                          let confirmMsg = "Finalize match with current score?";
+                          let needsConfirm = true;
+
+                           // Check if timer is running and > 0
+                          if (state.timerConfig.isActive && state.timerConfig.timeRemaining > 0 && !state.timerConfig.isPaused) {
+                               confirmMsg = `Timer is still running (${el('timer').textContent})! Finalize with the current score (${score1}-${score2})?`;
+                          }
+                          // Special case: Playoff draw needs no confirmation as user MUST resolve it first
+                          else if (state.phase === 'playoff' && match.liveScore[0] === match.liveScore[1]) {
+                               confirmMsg = "Playoff Draw! Please add score for the winner first, then click Exit."; // Reiterate instruction
+                               alert(confirmMsg); // Use alert instead of confirm
+                               needsConfirm = false; // Don't proceed with finalizeMatch yet
+                          }
+                          // Add other conditions where confirm might not be needed (e.g., timer already 0)
+                          else if (state.timerConfig.timeRemaining <= 0) {
+                               confirmMsg = `Timer finished. Finalizing with score ${score1}-${score2}.`;
+                               needsConfirm = false; // Auto-finalize if timer hit 0
+                               alert(confirmMsg); // Inform user
+                          }
+
+                          // Show confirmation dialog if needed
+                          if (needsConfirm) {
+                                if (confirm(confirmMsg)) {
+                                     finalizeMatch(); // Proceed if confirmed
+                                } else {
+                                     console.log("Match finalization cancelled by user.");
+                                }
+                          } else if (state.timerConfig.timeRemaining <= 0) {
+                                // If auto-finalizing because timer hit 0
+                                finalizeMatch();
+                          }
+                          // If it was a playoff draw alert, do nothing further here.
+                     };
+                } else console.error("Exit Btn not found");
+
+             } else {
+                // Disable buttons if match data failed to load
+                if(p1GoalBtn) p1GoalBtn.disabled = true;
+                if(p2GoalBtn) p2GoalBtn.disabled = true;
+                if(pauseResumeBtn) pauseResumeBtn.disabled = true;
+                if(exitBtn) exitBtn.disabled = true;
+                console.warn("Controls disabled due to match loading error.");
+             }
+        }
+
+        // Switches from Stream View back to App View (Setup/Results)
         function switchToNonStreamView() {
-            stopCamera();
-            stopTimer(); // Stops interval, marks inactive
-            stopTicker(); // Stops animation interval
-            streamContainer.style.display = 'none';
-            appDiv.style.display = 'flex'; // Show the non-stream UI container
-            render(); // Re-render the appropriate non-stream view (standings, bracket, etc.)
+             console.log("Switching from Stream View to App View...");
+             stopCamera(); // Stop camera feed
+             stopTimer(); // Stop match timer
+             stopTicker(); // Stop the animated ticker
+             streamContainer.style.display = 'none'; // Hide stream container
+             appDiv.style.display = 'flex'; // Show app container
+             render(); // Re-render the appropriate app view (standings, bracket, champion, etc.)
         }
 
-        // --- Champion / Bracket / Standings / Viz / Helpers (mostly unchanged) ---
-        function finishTournament(champion) { console.log("Tournament Finished! Champion:", champion.name); state.phase = 'completed'; state.champion = champion; saveState(); render(); }
-        function renderChampion(app) { /* ... unchanged ... */ app.innerHTML = ''; const card = div('div', 'card champion-box'); card.append(div('h2', 'section-title', 'Tournament Champion!')); if (state.champion) { const champBox = div('div'); const dot = div('div', 'player-color-static'); dot.style.background = state.champion.color; dot.style.width = 'clamp(60px, 15vh, 80px)'; dot.style.height = 'clamp(60px, 15vh, 80px)'; dot.style.margin = '0 auto 0.5rem auto'; const nm = div('div', 'player-name', state.champion.name); nm.style.fontSize = 'calc(var(--font-size-large) * 1.1)'; nm.style.fontWeight = 'bold'; champBox.append(dot, nm); card.append(champBox); } else { card.append(div('p', '', 'Error: Champion data not found.')); } const restart = btn('New Tournament'); restart.onclick = () => { clearState(); render(); }; card.append(restart); app.append(card); if(state.playoffRounds && state.playoffRounds.length > 0) renderBracket(app); if(state.groups) state.groups.forEach(group => renderGroupStandings(app, group)); }
-        function renderBracket(app) { /* ... unchanged ... */ const bracketContainer = div('div', 'card playoff-bracket'); bracketContainer.append(div('h3', 'section-title', 'Playoff Bracket')); if (!state || !state.playoffRounds) return; state.playoffRounds.forEach((round, roundIndex) => { const roundDiv = div('div', 'playoff-round'); roundDiv.append(div('h4', '', `Round ${roundIndex + 1}`)); round.forEach(match => { const matchDiv = div('div', 'playoff-match'); const p1BoxEl = playerBox(match.p1); const p2BoxEl = playerBox(match.p2); const scoreDiv = div('div', 'match-score'); if (match.score !== null) { scoreDiv.textContent = `${match.score[0]} - ${match.score[1]}`; if (match.winner) { if (match.winner.id === match.p1.id) { p1BoxEl.querySelector('.pname').classList.add('winner'); p2BoxEl.querySelector('.pname').classList.add('loser'); } else { p2BoxEl.querySelector('.pname').classList.add('winner'); p1BoxEl.querySelector('.pname').classList.add('loser'); } } } else { scoreDiv.textContent = 'vs'; } matchDiv.append(p1BoxEl, scoreDiv, p2BoxEl); roundDiv.append(matchDiv); }); bracketContainer.append(roundDiv); }); app.append(bracketContainer); }
-        function renderGroupStandings(app, group) { /* ... unchanged ... */ const st = div('div', 'card standings'); const groupTitle = div('h3', 'group-title', `Group ${group.id} Standings`); st.append(groupTitle); const table = document.createElement('table'); table.innerHTML = `<thead><tr><th class="player-name-col">Player</th><th>Pts</th><th>Pld</th><th>W</th><th>D</th><th>L</th><th>GF</th><th>GA</th><th>GD</th></tr></thead>`; const tbody = document.createElement('tbody'); const sortedPlayers = [...group.players].sort(comparePlayers); sortedPlayers.forEach(p => { const tr = document.createElement('tr'); const gd = p.goalsFor - p.goalsAgainst; tr.innerHTML = `<td class="player-name-col" style="display:flex; align-items:center; gap: 5px;"><div class="player-color-static" style="background:${p.color}; width:16px; height:16px; border-width:1px;"></div><span>${p.name}</span></td><td>${p.points}</td><td>${p.played}</td><td>${p.wins}</td><td>${p.draws}</td><td>${p.losses}</td><td>${p.goalsFor}</td><td>${p.goalsAgainst}</td><td>${gd > 0 ? '+' : ''}${gd}</td>`; tbody.append(tr); }); table.append(tbody); st.append(table); app.append(st); }
-        function renderPlayoffSelection(app) { /* ... unchanged ... */ app.innerHTML = ''; const card = div('div', 'card'); card.append(div('h2', 'section-title', 'Playoff Qualifiers')); const qualifierList = div('div'); qualifierList.style.display = 'flex'; qualifierList.style.flexWrap = 'wrap'; qualifierList.style.justifyContent = 'center'; qualifierList.style.gap = '1rem'; (state.playoffQualifiers || []).forEach(p => { const box = playerBox(p); box.style.flexDirection = 'column'; box.style.alignItems = 'center'; box.querySelector('.player-color-static').style.marginBottom = '0.3rem'; qualifierList.append(box); }); card.append(qualifierList); app.append(card); const vizContainer = div('div', 'visualization card'); vizContainer.append(div('h3', 'group-title', 'Advancement Visualization')); const svgElement = document.createElementNS('http://www.w3.org/2000/svg', 'svg'); svgElement.setAttribute('viewBox', '0 0 300 150'); vizContainer.append(svgElement); app.append(vizContainer); renderBasicVisualization(svgElement, state.playoffQualifiers || []); }
-        function comparePlayers(a, b) { /* ... unchanged ... */ const gdA = a.goalsFor - a.goalsAgainst; const gdB = b.goalsFor - b.goalsAgainst; if (b.points !== a.points) return b.points - a.points; if (gdB !== gdA) return gdB - gdA; if (b.goalsFor !== a.goalsFor) return b.goalsFor - a.goalsFor; return a.name.localeCompare(b.name); }
-        function shuffle(a) { /* ... unchanged ... */ for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } }
-        function div(tag, cls = '', text = '') { /* ... unchanged ... */ const d = document.createElement(tag); if (cls) d.className = cls; if (text) d.textContent = text; return d; }
-        function btn(text, cls = '') { /* ... unchanged ... */ const b = document.createElement('button'); b.textContent = text; if (cls) b.className = cls; return b; }
-        function playerBox(p) { /* ... unchanged ... */ const box = div('div', 'p-box'); const dot = div('div', 'player-color-static'); dot.style.background = p && p.color? p.color : '#ccc'; const nm = div('div', 'pname', p && p.name? p.name : 'TBD'); box.append(dot, nm); return box; }
-        function randomColor() { /* ... unchanged ... */ return '#' + Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0'); }
-        function generateMatches(groupPlayers) { /* ... unchanged ... */ const matches = []; const pIndices = groupPlayers.map((_, i) => i); for (let i = 0; i < pIndices.length; i++) { for (let j = i + 1; j < pIndices.length; j++) { matches.push({ p1Idx: pIndices[i], p2Idx: pIndices[j], score: null, liveScore:[0,0] }); } } return matches; }
-        function renderBasicVisualization(svgElement, qualifiers) { /* ... unchanged ... */ svgElement.innerHTML = ''; if (!qualifiers || qualifiers.length === 0) return; const width = 300; const height = 150; const nodeRadius = 8; const padding = 20; const targetY = height - padding - 15; const targetX = width / 2; const playoffText = document.createElementNS('http://www.w3.org/2000/svg', 'text'); playoffText.setAttribute('x', targetX); playoffText.setAttribute('y', targetY + 10); playoffText.setAttribute('class', 'playoff-area-text'); playoffText.textContent = 'Playoffs'; svgElement.appendChild(playoffText); const numQ = qualifiers.length; qualifiers.forEach((p, i) => { const angle = (Math.PI * (i + 0.5)) / numQ; const sX = targetX + (width / 2 - padding * 2) * Math.cos(angle - Math.PI / 2); const sY = (height / 2) - (height / 3) * Math.sin(angle - Math.PI / 2); const line = document.createElementNS('http://www.w3.org/2000/svg', 'line'); line.setAttribute('x1', sX); line.setAttribute('y1', sY); line.setAttribute('x2', targetX); line.setAttribute('y2', targetY); line.setAttribute('class', 'qualifier-line'); svgElement.appendChild(line); const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle'); circle.setAttribute('cx', sX); circle.setAttribute('cy', sY); circle.setAttribute('r', nodeRadius); circle.setAttribute('fill', p.color || '#ccc'); circle.setAttribute('stroke', '#fff'); circle.setAttribute('stroke-width', '1'); svgElement.appendChild(circle); const text = document.createElementNS('http://www.w3.org/2000/svg', 'text'); text.setAttribute('x', sX); text.setAttribute('y', sY - nodeRadius - 2); text.setAttribute('class', 'qualifier-text'); text.textContent = p.name || 'TBD'; svgElement.appendChild(text); }); }
-        function el(id) { return document.getElementById(id); } // Helper
+
+        // --- Champion Screen / Results Rendering ---
+        function finishTournament(champion) {
+             console.log(`Tournament Finished! Champion: ${champion.name}`);
+             state.phase = 'completed'; // Set final phase
+             state.champion = champion; // Store the champion object
+             stopTimer(); // Ensure timer is stopped
+             stopCamera(); // Ensure camera is off
+             stopTicker(); // Ensure ticker is off
+             saveState(); // Save the final state
+             render(); // Render the champion screen
+        }
+
+        function renderChampion(app) {
+             app.innerHTML = ''; // Clear previous content
+             const card = div('div', 'card champion-box');
+             card.append(div('h2', 'section-title', '🏆 Tournament Champion! 🏆'));
+
+             if (state.champion) {
+                  const champBox = div('div');
+                  champBox.style.margin = '1rem 0';
+                  // Champion Color Indicator
+                  const dot = div('div', 'player-color-static');
+                  dot.style.background = state.champion.color || '#ffd700'; // Gold fallback
+                  dot.style.width = 'clamp(60px, 15vh, 80px)';
+                  dot.style.height = 'clamp(60px, 15vh, 80px)';
+                  dot.style.margin = '0 auto 0.5rem auto';
+                  dot.style.borderWidth = '3px';
+                  // Champion Name
+                  const nm = div('div', 'player-name', state.champion.name);
+                  nm.style.fontSize = 'calc(var(--font-size-large) * 1.1)';
+                  nm.style.fontWeight = 'bold';
+                  nm.style.color = state.champion.color || 'var(--win-color)'; // Use player color or win color
+                  champBox.append(dot, nm);
+                  card.append(champBox);
+             } else {
+                  card.append(div('p', '', 'Error: Champion data not found.'));
+             }
+
+             // Restart Button
+             const restart = btn('Start New Tournament');
+             restart.style.marginTop = '1.5rem';
+             restart.onclick = () => {
+                  if (confirm("Are you sure you want to discard this tournament and start a new one?")) {
+                       clearState(); // Clear local storage
+                       render(); // Render the create form
+                  }
+             };
+             card.append(restart);
+             app.append(card);
+
+             // Append Bracket and Standings below the champion info
+             if (state.playoffRounds && state.playoffRounds.length > 0) {
+                  renderBracket(app); // Show the final bracket
+             }
+             if (state.groups) {
+                  state.groups.forEach(group => renderGroupStandings(app, group)); // Show final group standings
+             }
+        }
+
+        // Renders the Playoff Bracket display
+        function renderBracket(app) {
+             // Check if bracket already exists to prevent duplicates if render called multiple times
+             if (app.querySelector('.playoff-bracket')) return;
+
+             const bracketContainer = div('div', 'card playoff-bracket');
+             bracketContainer.append(div('h3', 'section-title', 'Playoff Bracket'));
+
+             if (!state || !state.playoffRounds || state.playoffRounds.length === 0) {
+                 bracketContainer.append(div('p','','No playoff data available.'));
+                 app.append(bracketContainer);
+                 return;
+             }
+
+             state.playoffRounds.forEach((round, roundIndex) => {
+                  const roundDiv = div('div', 'playoff-round');
+                  roundDiv.append(div('h4', '', `Round ${roundIndex + 1}`));
+                  if (round.length === 0) {
+                       roundDiv.append(div('p','','(No matches in this round)'));
+                  }
+                  round.forEach(match => {
+                        // Skip rendering BYE matches explicitly or style them differently
+                        if (match.p2 && match.p2.id === "BYE") {
+                            // Optionally render something indicating a bye, or skip
+                            // const byeDiv = div('div', 'playoff-match bye-match'); // Add specific class
+                            // byeDiv.innerHTML = `<div class="p-box">${playerBox(match.p1).innerHTML}</div> <div>BYE</div>`;
+                            // roundDiv.append(byeDiv);
+                            return; // Simple: just don't render bye matches
+                        }
+
+                       const matchDiv = div('div', 'playoff-match');
+                       // Player Boxes
+                       const p1BoxEl = playerBox(match.p1);
+                       const p2BoxEl = playerBox(match.p2);
+                       // Score Display
+                       const scoreDiv = div('div', 'match-score');
+
+                       // Populate score and highlight winner/loser if match is complete
+                       if (match.score !== null && match.score.length === 2) {
+                            scoreDiv.textContent = `${match.score[0]} - ${match.score[1]}`;
+                            if (match.winner) {
+                                 if (match.winner.id === match.p1.id) {
+                                      p1BoxEl.querySelector('.pname').classList.add('winner');
+                                      if (match.p2) p2BoxEl.querySelector('.pname').classList.add('loser');
+                                 } else if (match.p2 && match.winner.id === match.p2.id) {
+                                      p2BoxEl.querySelector('.pname').classList.add('winner');
+                                      p1BoxEl.querySelector('.pname').classList.add('loser');
+                                 }
+                            }
+                       } else if (match.liveScore && (match.liveScore[0] > 0 || match.liveScore[1] > 0)) {
+                            // Show live score if available and non-zero
+                            scoreDiv.textContent = `${match.liveScore[0]} - ${match.liveScore[1]} (Live)`;
+                            scoreDiv.style.opacity = '0.7';
+                       }
+                       else {
+                            scoreDiv.textContent = 'vs'; // Match not played or score not recorded
+                       }
+
+                       matchDiv.append(p1BoxEl, scoreDiv, p2BoxEl);
+                       roundDiv.append(matchDiv);
+                  });
+                  bracketContainer.append(roundDiv);
+             });
+             app.append(bracketContainer); // Append the whole bracket at the end
+        }
+
+        // Renders Standings Table for a Single Group
+        function renderGroupStandings(app, group) {
+            // Check if this group's standings already exist
+            if (app.querySelector(`.standings[data-group-id="${group.id}"]`)) return;
+
+             const st = div('div', 'card standings');
+             st.dataset.groupId = group.id; // Add data attribute for identification
+             const groupTitle = div('h3', 'group-title', `Group ${group.id} Final Standings`);
+             st.append(groupTitle);
+
+             const table = document.createElement('table');
+             table.innerHTML = `<thead><tr><th class="player-name-col">Player</th><th>Pts</th><th>Pld</th><th>W</th><th>D</th><th>L</th><th>GF</th><th>GA</th><th>GD</th></tr></thead>`;
+             const tbody = document.createElement('tbody');
+
+             // Sort players for final standings display
+             const sortedPlayers = [...group.players].sort(comparePlayers);
+
+             sortedPlayers.forEach(p => {
+                  const tr = document.createElement('tr');
+                  const gd = p.goalsFor - p.goalsAgainst;
+                  // Use innerHTML for simplicity, ensure names are properly handled if they contain special chars (though unlikely here)
+                  tr.innerHTML = `
+                       <td class="player-name-col">
+                           <span style="display: inline-block; width: 12px; height: 12px; border-radius: 50%; background-color: ${p.color}; margin-right: 5px; vertical-align: middle;"></span>
+                           <span>${p.name}</span>
+                       </td>
+                       <td>${p.points}</td><td>${p.played}</td><td>${p.wins}</td><td>${p.draws}</td><td>${p.losses}</td>
+                       <td>${p.goalsFor}</td><td>${p.goalsAgainst}</td><td>${gd > 0 ? '+' : ''}${gd}</td>
+                  `;
+                  tbody.append(tr);
+             });
+             table.append(tbody);
+             st.append(table);
+             app.append(st); // Append this group's standings
+        }
+
+        // Renders the Playoff Qualifier Selection Screen
+        function renderPlayoffSelection(app) {
+             app.innerHTML = ''; // Clear previous content
+             const card = div('div', 'card');
+             card.append(div('h2', 'section-title', 'Playoff Qualifiers Determined'));
+             card.append(div('p', '', 'The following players have advanced:'));
+
+             const qualifierList = div('div');
+             qualifierList.style.display = 'flex';
+             qualifierList.style.flexWrap = 'wrap';
+             qualifierList.style.justifyContent = 'center';
+             qualifierList.style.gap = '1rem'; // Add gap between player boxes
+             qualifierList.style.marginTop = '1rem';
+
+             if (!state.playoffQualifiers || state.playoffQualifiers.length === 0) {
+                qualifierList.append(div('p','','No qualifiers found.'));
+             } else {
+                state.playoffQualifiers.forEach(p => {
+                     const box = playerBox(p);
+                     box.style.margin = '0'; // Remove margin from playerBox default if needed
+                     // Add source group info if available
+                     if (p.sourceGroup) {
+                        const sourceInfo = div('span','', ` (Group ${p.sourceGroup})`);
+                        sourceInfo.style.fontSize = '0.8em';
+                        sourceInfo.style.opacity = '0.7';
+                        box.querySelector('.pname').appendChild(sourceInfo);
+                     }
+                     qualifierList.append(box);
+                });
+             }
+             card.append(qualifierList);
+             app.append(card);
+
+             // Visualization (Optional)
+             const vizContainer = div('div', 'visualization card');
+             vizContainer.style.marginTop = '1rem';
+             vizContainer.append(div('h3', 'group-title', 'Advancement Visualization'));
+             const svgElement = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+             svgElement.setAttribute('viewBox', '0 0 300 150'); // Fixed viewBox for simplicity
+             svgElement.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+             vizContainer.append(svgElement);
+             app.append(vizContainer);
+
+             // Render the basic lines-to-center visualization
+             renderBasicVisualization(svgElement, state.playoffQualifiers);
+
+             // Note: The "Start First Playoff Match" button is added in the main `render` function
+             // when state.phase is 'playoff_selection'.
+        }
+
+        // --- Helper Functions ---
+
+        // Comparison function for sorting players (Points > GD > GF > Name)
+        function comparePlayers(a, b) {
+             const pointsDiff = b.points - a.points;
+             if (pointsDiff !== 0) return pointsDiff;
+
+             const gdA = a.goalsFor - a.goalsAgainst;
+             const gdB = b.goalsFor - b.goalsAgainst;
+             const gdDiff = gdB - gdA;
+             if (gdDiff !== 0) return gdDiff;
+
+             const gfDiff = b.goalsFor - a.goalsFor;
+             if (gfDiff !== 0) return gfDiff;
+
+             // Optional: Fewest Goals Against as next tie-breaker?
+             // const gaDiff = a.goalsAgainst - b.goalsAgainst;
+             // if (gaDiff !== 0) return gaDiff;
+
+             // Finally, sort by name alphabetically if all stats are identical
+             return a.name.localeCompare(b.name);
+        }
+
+        // Fisher-Yates Shuffle Algorithm
+        function shuffle(a) {
+             for (let i = a.length - 1; i > 0; i--) {
+                  const j = Math.floor(Math.random() * (i + 1));
+                  [a[i], a[j]] = [a[j], a[i]]; // Swap elements
+             }
+        }
+
+        // Generates all unique pairs of matches for players in a group
+        function generateMatches(groupPlayers) {
+             const matches = [];
+             const pIndices = groupPlayers.map((_, i) => i); // Get indices [0, 1, 2, ...]
+             for (let i = 0; i < pIndices.length; i++) {
+                  for (let j = i + 1; j < pIndices.length; j++) {
+                       matches.push({
+                            p1Idx: pIndices[i], // Store index of player 1 in group.players
+                            p2Idx: pIndices[j], // Store index of player 2 in group.players
+                            score: null,        // Final score (null until played)
+                            liveScore: [0, 0]   // Score during the match
+                       });
+                  }
+             }
+             return matches;
+        }
+
+        // DOM Element creation helper
+        function div(tag, cls = '', text = '') {
+             const d = document.createElement(tag);
+             if (cls) d.className = cls;
+             if (text) d.textContent = text;
+             return d;
+        }
+
+        // Button creation helper
+        function btn(text, cls = '') {
+             const b = document.createElement('button');
+             b.textContent = text;
+             if (cls) b.className = cls;
+             return b;
+        }
+
+        // Helper to get element by ID
+        function el(id) {
+             return document.getElementById(id);
+        }
 
 
-    })();
+        // Creates a simple player display box (color dot + name)
+        function playerBox(p) {
+             const box = div('div', 'p-box'); // Ensure p-box class for styling consistency
+             // Color indicator
+             const dot = div('div', 'player-color-static');
+             dot.style.background = p && p.color ? p.color : '#cccccc'; // Default grey if no player/color
+             dot.style.width = '20px'; // Consistent small size
+             dot.style.height = '20px';
+             dot.style.borderWidth = '1px'; // Thinner border
+             // Player name
+             const nm = div('div', 'pname', p && p.name ? p.name : 'TBD'); // Handle null/undefined player
+             box.append(dot, nm);
+             return box;
+        }
+
+        // Generates a random hex color
+        function randomColor() {
+             return '#' + Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0');
+        }
+
+        // Renders a basic SVG visualization showing qualifiers converging
+        function renderBasicVisualization(svgElement, qualifiers) {
+            svgElement.innerHTML = ''; // Clear previous SVG content
+            if (!qualifiers || qualifiers.length === 0) return;
+
+            const width = 300; // ViewBox width
+            const height = 150; // ViewBox height
+            const nodeRadius = 7; // Slightly smaller nodes
+            const padding = 20; // Padding from edges
+            const targetY = height - padding - 20; // Target point slightly higher
+            const targetX = width / 2;
+
+            // Add "Playoffs" text below target point
+            const playoffText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            playoffText.setAttribute('x', targetX);
+            playoffText.setAttribute('y', targetY + 15); // Position below target point
+            playoffText.setAttribute('class', 'playoff-area-text');
+            playoffText.textContent = 'Playoffs';
+            svgElement.appendChild(playoffText);
+
+            const numQ = qualifiers.length;
+            const startAreaHeight = height * 0.5; // Area where nodes start
+            const startYOffset = padding + nodeRadius; // Top offset
+
+            qualifiers.forEach((p, i) => {
+                // Distribute start points more horizontally
+                const startX = padding + nodeRadius + (width - 2 * padding - 2 * nodeRadius) * (i / Math.max(1, numQ - 1));
+                const startY = startYOffset + (i % 2 === 0 ? 0 : startAreaHeight * 0.3); // Stagger Y slightly
+
+                // Draw line from start point to target playoff area
+                const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                line.setAttribute('x1', startX);
+                line.setAttribute('y1', startY);
+                line.setAttribute('x2', targetX);
+                line.setAttribute('y2', targetY);
+                line.setAttribute('class', 'qualifier-line');
+                svgElement.appendChild(line);
+
+                // Draw circle node at the start point
+                const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                circle.setAttribute('cx', startX);
+                circle.setAttribute('cy', startY);
+                circle.setAttribute('r', nodeRadius);
+                circle.setAttribute('fill', p.color || '#ccc');
+                circle.setAttribute('stroke', '#fff'); // White border for visibility
+                circle.setAttribute('stroke-width', '1');
+                svgElement.appendChild(circle);
+
+                // Add player name label near the node
+                const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                text.setAttribute('x', startX);
+                text.setAttribute('y', startY - nodeRadius - 3); // Position above node
+                text.setAttribute('class', 'qualifier-text'); // Use CSS for styling
+                text.textContent = p.name;
+                svgElement.appendChild(text);
+            });
+        }
+
+
+    })(); // End of IIFE
     </script>
 </body>
 </html>
