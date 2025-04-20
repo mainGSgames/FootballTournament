@@ -1,705 +1,695 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<title>Sega 1-v-1 Football Tournament</title> <style>
-/* --- CSS --- (Keep existing styles, add/modify as below) --- */
-:root {
-    --accent: #10b981; /* Emerald green */
-    --bg: #0f172a; /* Slate blue dark */
-    --fg: #f8fafc; /* Slate light */
-    --card: #1e293b; /* Slate blue darker */
-    --input-bg: #334155; /* Slate blue medium */
-    --border-color: #475569; /* Slate blue lighter */
-    --win-color: var(--accent);
-    --loss-color: #f43f5e; /* Rose */
-}
-* { box-sizing: border-box; font-family: system-ui, Segoe UI, Roboto, Helvetica, Arial, sans-serif; margin: 0; padding: 0; }
-body { background: var(--bg); color: var(--fg); min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 1rem; }
-h1 { font-size: 1.8rem; margin: 1rem 0; text-align: center; }
-button { padding: 0.6rem 1rem; border: none; border-radius: 0.5rem; font-size: 1rem; background: var(--accent); color: #fff; font-weight: 600; cursor: pointer; margin: 0.3rem; transition: transform 0.1s ease; }
-button.secondary { background: var(--card); }
-#app { width: 100%; max-width: 700px; }
-.card { background: var(--card); padding: 1rem; border-radius: 1rem; margin-bottom: 1rem; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); }
-.player-row { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem; }
-.player-color { width: 32px; height: 32px; border-radius: 50%; border: 2px solid #fff; cursor: pointer; flex-shrink: 0; }
-.player-input { flex-grow: 1; background-color: var(--input-bg); color: var(--fg); border: 1px solid var(--border-color); padding: 0.5rem; border-radius: 0.3rem;}
-input[type="color"] { width: 40px; height: 40px; padding: 0; border: none; background: transparent; cursor: pointer; flex-shrink: 0; }
-input[type="number"] { width: 60px; padding: 0.5rem; background: var(--input-bg); color: var(--fg); border: 1px solid var(--border-color); border-radius: 0.3rem; text-align: center; font-size: 1.2rem; -moz-appearance: textfield; }
-input[type=number]::-webkit-inner-spin-button,
-input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Sega Football Stream Overlay</title>
+    <style>
+        :root {
+            --accent: #10b981; /* Emerald green */
+            --bg: #0f172a; /* Fallback bg if camera fails */
+            --fg: #f8fafc; /* Slate light */
+            --card: #1e293b; /* For setup screens */
+            --overlay-bg: rgba(15, 23, 42, 0.7); /* Slightly darker overlay */
+            --player1-color: #3b82f6; /* Blue */
+            --player2-color: #ef4444; /* Red */
+            --timer-color: #f59e0b; /* Amber */
+            --button-size: clamp(40px, 8vh, 60px); /* Responsive button size */
+            --font-size-large: clamp(1.5rem, 5vh, 3rem);
+            --font-size-medium: clamp(1rem, 3vh, 1.8rem);
+            --font-size-small: clamp(0.8rem, 2vh, 1.2rem);
+            --border-color: #475569; /* Added from previous version */
+            --input-bg: #334155; /* Added from previous version */
+            --win-color: var(--accent);
+            --loss-color: #f43f5e; /* Rose */
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, Segoe UI, Roboto, Helvetica, Arial, sans-serif; }
+        html, body { height: 100%; width: 100%; overflow: hidden; background-color: var(--bg); color: var(--fg); }
 
-.match-input-area { display: flex; align-items: center; justify-content: center; gap: 1rem; margin-top: 1rem; margin-bottom: 1rem;}
-.match-input-area .p-box { flex: 1; text-align: center; }
-.match-input-area input[type="number"] { margin: 0 auto; display: block; }
-.match-input-area button { margin-top: 0.5rem; }
+        button { background: var(--accent); color: #fff; border: none; border-radius: 0.5rem; font-weight: 600; cursor: pointer; padding: 0.5em 1em; transition: transform 0.1s ease; font-size: var(--font-size-small); }
+        button:hover { transform: scale(1.03); }
+        button.icon-button { padding: 0; width: var(--button-size); height: var(--button-size); font-size: calc(var(--button-size) * 0.5); display: flex; align-items: center; justify-content: center; border-radius: 50%; }
+        button.secondary { background: var(--card); }
 
-.versus { display: flex; align-items: center; justify-content: space-around; gap: 0.5rem; margin: 1rem 0; }
-.versus .pname { font-size: 1.2rem; font-weight: 600; }
-.vs-label { font-size: 1.5rem; font-weight: 700; }
-.p-box { display: flex; flex-direction: column; align-items: center; gap: 0.3rem; }
-.p-box .pname.winner { color: var(--win-color); font-weight: bold;} /* Style winner in playoff box */
-.p-box .pname.loser { text-decoration: line-through; opacity: 0.7;} /* Style loser */
+        /* --- Setup/Non-Stream Views --- */
+        #app { width: 100%; height: 100%; display: none; /* Hidden by default, shown by render */ flex-direction: column; align-items: center; justify-content: center; padding: 1rem; }
+        .card { background: var(--card); padding: clamp(0.5rem, 2vw, 1rem); border-radius: 1rem; margin-bottom: 1rem; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); max-width: 700px; width: 90%; overflow-y: auto; max-height: 85vh; }
+        .player-row { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem; }
+        .player-color-static { width: 32px; height: 32px; border-radius: 50%; border: 2px solid #fff; flex-shrink: 0; cursor: pointer; }
+        .player-input { flex-grow: 1; background-color: var(--input-bg); color: var(--fg); border: 1px solid var(--border-color); padding: 0.5rem; border-radius: 0.3rem; font-size: var(--font-size-small);}
+        input[type="color"] { width: 40px; height: 40px; padding: 0; border: none; background: transparent; cursor: pointer; flex-shrink: 0; }
+        input[type="number"] { width: 60px; padding: 0.5rem; background: var(--input-bg); color: var(--fg); border: 1px solid var(--border-color); border-radius: 0.3rem; text-align: center; -moz-appearance: textfield; font-size: var(--font-size-small); }
+        input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+        .settings-row { display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem; flex-wrap: wrap; }
+        .settings-row label { flex-basis: 150px; flex-shrink: 0; font-size: var(--font-size-small); }
+        .group-title, .section-title { font-size: var(--font-size-medium); margin-bottom: 0.75rem; color: var(--accent); border-bottom: 1px solid var(--accent); padding-bottom: 0.3rem; }
+        .standings { margin-top: 1rem; font-size: var(--font-size-small); overflow-x: auto; }
+        .standings table { width: 100%; border-collapse: collapse; margin-top: 0.5rem; }
+        .standings th, .standings td { padding: 0.4rem 0.2rem; text-align: center; white-space: nowrap; }
+        .standings tr:nth-child(even) { background: #334155; }
+        .standings th { background: var(--accent); color: var(--bg); font-weight: bold; }
+        .standings .player-name-col { text-align: left; padding-left: 0.5rem; }
 
-.standings { overflow-x: auto; }
-.standings table { width: 100%; border-collapse: collapse; margin-top: 0.5rem; font-size: 0.9rem; }
-.standings th, .standings td { padding: 0.5rem 0.3rem; text-align: center; white-space: nowrap; }
-.standings tr:nth-child(even) { background: #334155; }
-.standings th { background: var(--accent); color: var(--bg); font-weight: bold; }
-.standings .player-name-col { text-align: left; padding-left: 0.5rem; }
-.last-match { opacity: 0.8; margin-top: 1rem; text-align: center; font-size: 0.9rem;}
-.group-title, .section-title { font-size: 1.5rem; margin-bottom: 0.75rem; color: var(--accent); border-bottom: 1px solid var(--accent); padding-bottom: 0.3rem; }
-.settings-row { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem; }
-.settings-row label { flex-basis: 150px; flex-shrink: 0; }
-.visualization { margin-top: 1rem; }
-.visualization svg { width: 100%; min-height: 200px; background: #0f172a; border-radius: 0.5rem; border: 1px solid var(--card); }
-/* --- SVG styles --- (keep existing) --- */
-.qualifier-node { fill: var(--accent); }
-.qualifier-text { fill: var(--fg); font-size: 0.8rem; text-anchor: middle; }
-.qualifier-line { stroke: var(--fg); stroke-width: 1; opacity: 0.5; }
-.playoff-area-text { fill: var(--fg); font-size: 1rem; text-anchor: middle; font-weight: bold; }
-
-.playoff-bracket { margin-top: 1rem; }
-.playoff-round { margin-bottom: 1rem; border-left: 2px solid var(--border-color); padding-left: 1rem;}
-.playoff-match { display: flex; justify-content: space-between; align-items: center; padding: 0.5rem; border-bottom: 1px dashed var(--border-color); }
-.playoff-match .p-box { flex-basis: 40%; }
-.playoff-match .match-score { font-weight: bold; }
-
-.champion-box { text-align: center; padding: 2rem; }
-.champion-box .pname { font-size: 2rem; color: var(--win-color);}
-.champion-box .player-color { width: 80px; height: 80px; margin: 0 auto 0.5rem auto; }
+        /* Playoff Bracket Styles */
+        .playoff-bracket { margin-top: 1rem; }
+        .playoff-round { margin-bottom: 1rem; border-left: 2px solid var(--border-color); padding-left: 1rem;}
+        .playoff-match { display: flex; justify-content: space-between; align-items: center; padding: 0.3rem 0.5rem; border-bottom: 1px dashed var(--border-color); }
+        .playoff-match .p-box { flex-basis: 40%; }
+        .playoff-match .p-box .pname { font-size: var(--font-size-small); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;}
+        .playoff-match .player-color-static { width: 20px; height: 20px; border-width: 1px;} /* Smaller dots in bracket */
+        .playoff-match .match-score { font-weight: bold; font-size: var(--font-size-small); }
+        .p-box .pname.winner { color: var(--win-color); font-weight: bold;}
+        .p-box .pname.loser { text-decoration: line-through; opacity: 0.7;}
 
 
-@media (hover: hover) { button:hover { transform: scale(1.03); } }
-</style>
+        /* --- Stream View --- */
+        #stream-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: var(--bg); display: none; /* Hidden by default, shown by render */ }
+        #camera-feed { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: 1; background-color: #333; /* Dark placeholder */ }
+        #overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 2; display: flex; flex-direction: column; pointer-events: none; padding: clamp(5px, 2vh, 15px); }
+        .overlay-top { display: flex; justify-content: center; align-items: center; padding: 0.5em; background: var(--overlay-bg); border-radius: 0.5rem; margin-bottom: auto; pointer-events: auto; flex-shrink: 0; gap: 1rem;}
+        .overlay-main { display: flex; justify-content: space-between; align-items: stretch; flex-grow: 1; gap: clamp(5px, 1vw, 10px); }
+        .overlay-bottom { display: flex; justify-content: center; align-items: center; padding-top: clamp(5px, 1vh, 10px); pointer-events: auto; flex-shrink: 0;}
+        .timer { font-size: var(--font-size-large); font-weight: bold; color: var(--timer-color); min-width: 100px; text-align: center;}
+        .timer.paused { opacity: 0.6; }
+        .match-info { font-size: var(--font-size-small); text-align: center; color: #ccc; }
+        .player-box { background: var(--overlay-bg); border-radius: 0.5rem; padding: clamp(0.5rem, 2vh, 1rem); display: flex; flex-direction: column; align-items: center; justify-content: space-around; flex-basis: 45%; pointer-events: auto; text-align: center; border: 2px solid transparent; /* For potential color highlight */ }
+        .player-box .player-name { font-size: var(--font-size-medium); font-weight: bold; margin-bottom: 0.5rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%;}
+        .player-box .player-score { font-size: var(--font-size-large); font-weight: bold; margin: 1rem 0; flex-grow: 1; display:flex; align-items:center; justify-content: center;}
+        .player-box .goal-button { background-color: var(--accent); }
+        /* Player name color applied via JS */
+
+        /* --- Champion Screen --- */
+        .champion-box { text-align: center; padding: 2rem; }
+        .champion-box .player-name { font-size: calc(var(--font-size-large) * 1.1); color: var(--win-color); }
+        .champion-box .player-color-static { width: clamp(60px, 15vh, 80px); height: clamp(60px, 15vh, 80px); margin: 0 auto 0.5rem auto; }
+
+        /* Basic Visualization Styles */
+        .visualization { margin-top: 1rem; width: 100%; }
+        .visualization svg { width: 100%; min-height: 150px; max-height: 30vh; background: var(--bg); border-radius: 0.5rem; border: 1px solid var(--card); }
+        .qualifier-node { fill: var(--accent); }
+        .qualifier-text { fill: var(--fg); font-size: 0.7rem; text-anchor: middle; }
+        .qualifier-line { stroke: var(--fg); stroke-width: 1; opacity: 0.5; }
+        .playoff-area-text { fill: var(--fg); font-size: 0.9rem; text-anchor: middle; font-weight: bold; }
+    </style>
 </head>
 <body>
+    <div id="app"></div>
+    <div id="stream-container">
+        <video id="camera-feed" playsinline autoplay muted></video>
+        <div id="overlay">
+            <div class="overlay-top">
+                 <div id="match-info" class="match-info"></div>
+                 <div id="timer" class="timer">00:00</div>
+                 <button id="pause-resume-button" class="icon-button pause-resume-button">❚❚</button>
+            </div>
+            <div class="overlay-main">
+                <div id="player1-box" class="player-box player1">
+                    <div id="player1-name" class="player-name"></div>
+                    <div id="player1-score" class="player-score">0</div>
+                    <button id="player1-goal-button" class="icon-button goal-button">+</button>
+                </div>
+                <div id="player2-box" class="player-box player2">
+                    <div id="player2-name" class="player-name"></div>
+                    <div id="player2-score" class="player-score">0</div>
+                    <button id="player2-goal-button" class="icon-button goal-button">+</button>
+                </div>
+            </div>
+            <div class="overlay-bottom">
+                 <button id="exit-stream-button" class="secondary" style="pointer-events: auto;">Exit Match</button>
+            </div>
+        </div>
+    </div>
 
-<h1>Sega 1-v-1 Football Tournament</h1>
-<div id="app"></div>
+    <script>
+    (function() {
+        const STORAGE_KEY = 'segaRR_v5_stream_fix1'; // Updated storage key
+        let state = null;
+        let timerInterval = null;
+        let cameraStream = null;
 
-<script>
-(function() {
-    const STORAGE_KEY = 'segaRR_v4_playoffs'; // Updated storage key
-    let state = null;
+        // DOM Elements Cache
+        const appDiv = document.getElementById('app');
+        const streamContainer = document.getElementById('stream-container');
+        const cameraVideo = document.getElementById('camera-feed');
+        // Overlay elements are cached/accessed within renderStreamView
 
-    // --- Initialization & State Management ---
-    init();
+        // --- Initialization & State ---
+        init();
 
-    function init() {
-        loadState();
-        render();
-    }
-
-    function loadState() {
-        try {
-            state = JSON.parse(localStorage.getItem(STORAGE_KEY)) || null;
-            // Add validation/migration if state structure changes significantly later
-        } catch (e) {
-            console.error("Failed to load state:", e);
-            state = null;
-        }
-    }
-
-    function saveState() {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-    }
-
-    function clearState() {
-        localStorage.removeItem(STORAGE_KEY);
-        state = null;
-    }
-
-    // --- Core Rendering Logic ---
-    function render() {
-        const app = document.getElementById('app');
-        app.innerHTML = '';
-
-        if (!state) {
-            renderCreateForm(app);
-        } else if (state.phase === 'group') {
-            renderGroupStage(app);
-        } else if (state.phase === 'playoff_selection') {
-            // This phase is now transitional, directly call playoff render
-            renderPlayoffSelection(app); // Keep for review/viz
-            renderPlayoffs(app); // Render the first playoff match UI
-        } else if (state.phase === 'playoff') {
-             renderPlayoffs(app);
-        } else if (state.phase === 'completed') {
-             renderChampion(app);
-        } else {
-            // Fallback / Error state
-            console.error("Unknown state phase:", state.phase);
-            renderCreateForm(app); // Go back to start
-        }
-    }
-
-    // --- Phase 1: Tournament Setup ---
-    function renderCreateForm(app) { /* ... unchanged ... */
-        const card = div('div', 'card');
-        const settingsCont = div('div');
-        const listCont = div('div');
-        const addBtn = btn('Add Player');
-        const startBtn = btn('Start Tournament', 'secondary');
-
-        // Group Size Setting
-        const groupSizeRow = div('div', 'settings-row');
-        groupSizeRow.innerHTML = `
-            <label for="maxGroupSizeInput">Max Players per Group:</label>
-            <input type="number" id="maxGroupSizeInput" min="2" value="4" class="player-input" style="width: 60px; flex-grow: 0;">
-        `;
-        settingsCont.append(groupSizeRow);
-
-        card.append(settingsCont, listCont, addBtn, startBtn);
-        app.append(card);
-
-        let players = []; // Temporary list for setup
-
-        function refreshPlayerList() {
-            listCont.innerHTML = '';
-            players.forEach((p, i) => {
-                const row = div('div', 'player-row');
-                const dot = div('div', 'player-color');
-                dot.style.background = p.color;
-                dot.onclick = () => { p.color = randomColor(); dot.style.background = p.color; inpColor.value = p.color; };
-
-                const inpName = document.createElement('input');
-                inpName.placeholder = 'Name';
-                inpName.className = 'player-input';
-                inpName.value = p.name;
-                inpName.oninput = e => p.name = e.target.value;
-
-                const inpColor = document.createElement('input');
-                inpColor.type = 'color';
-                inpColor.value = p.color;
-                inpColor.oninput = e => { p.color = e.target.value; dot.style.background = p.color; };
-
-                const del = btn('x', 'secondary');
-                del.onclick = () => { players.splice(i, 1); refreshPlayerList(); };
-                row.append(dot, inpName, inpColor, del);
-                listCont.append(row);
-            });
+        function init() {
+            loadState();
+            render();
         }
 
-        addBtn.onclick = () => {
-            players.push({ id: 'P' + Date.now() + players.length, name: '', color: randomColor() }); // Simplified player object for setup
-            refreshPlayerList();
-        };
+        function loadState() {
+            let loadedState = null;
+            try {
+                loadedState = JSON.parse(localStorage.getItem(STORAGE_KEY)) || null;
+            } catch (e) { console.error("Failed to parse state:", e); loadedState = null; }
 
-        startBtn.onclick = () => {
-            const cleanPlayers = players.filter(p => p.name.trim());
-            const maxGroupSize = parseInt(document.getElementById('maxGroupSizeInput').value, 10);
-
-            if (cleanPlayers.length < 2) { alert('Need at least 2 players'); return; }
-            if (isNaN(maxGroupSize) || maxGroupSize < 2) { alert('Max players per group must be at least 2'); return; }
-            if (cleanPlayers.length < maxGroupSize && cleanPlayers.length > 1) {
-                 if (!confirm(`You have fewer players (${cleanPlayers.length}) than the group size (${maxGroupSize}). Continue with a single group?`)) return;
+            // Ensure timerConfig exists and is valid, establish defaults if needed
+            let timerConfig = { durationMinutes: 5, timeRemaining: 300, isPaused: false, isActive: false };
+            if (loadedState && loadedState.timerConfig) {
+                 // Validate loaded config, use defaults if invalid
+                 timerConfig.durationMinutes = parseInt(loadedState.timerConfig.durationMinutes, 10) || 5;
+                 // Ensure timeRemaining aligns with duration unless timer was active/paused
+                 if (!loadedState.timerConfig.isActive) {
+                      timerConfig.timeRemaining = timerConfig.durationMinutes * 60;
+                 } else {
+                      timerConfig.timeRemaining = parseInt(loadedState.timerConfig.timeRemaining, 10) || timerConfig.durationMinutes * 60;
+                 }
+                 timerConfig.isPaused = loadedState.timerConfig.isPaused || false;
+                 timerConfig.isActive = loadedState.timerConfig.isActive || false;
             }
 
-            startTournament(cleanPlayers, maxGroupSize);
-        };
-        refreshPlayerList();
-    }
+            // Assign validated/default timer config back to state
+             if (loadedState) {
+                 loadedState.timerConfig = timerConfig;
+             }
 
-    function startTournament(initialPlayers, maxGroupSize) { /* ... unchanged group creation logic ... */
-        shuffle(initialPlayers);
-        const groupsData = [];
-        for (let i = 0; i < initialPlayers.length; i += maxGroupSize) {
-            groupsData.push(initialPlayers.slice(i, i + maxGroupSize));
-        }
-        if (groupsData.length > 1 && groupsData[groupsData.length - 1].length < 2) {
-            const lastGroup = groupsData.pop();
-            lastGroup.forEach((player, index) => groupsData[index % groupsData.length].push(player));
+            state = loadedState; // Assign the processed state
+            console.log("State loaded:", JSON.parse(JSON.stringify(state)));
         }
 
-        const finalGroups = groupsData.map((groupPlayers, index) => {
-            const playersInGroup = groupPlayers.map(p => ({
-                ...p, points: 0, played: 0, wins: 0, draws: 0, losses: 0, goalsFor: 0, goalsAgainst: 0
-            }));
-            return {
-                id: index + 1, players: playersInGroup, matches: generateMatches(playersInGroup),
-                currentMatchIdx: 0, isComplete: false, lastMatch: null
-            };
-        });
-        finalGroups.forEach(group => shuffle(group.matches));
 
-        state = {
-            phase: 'group', groups: finalGroups, currentGroupIdx: 0,
-            // Playoff related state initialized later
-            playoffQualifiers: [], playoffRounds: [], currentPlayoffRoundIdx: -1, currentPlayoffMatchIdx: -1, champion: null
-        };
-        saveState();
-        render();
-    }
-
-    // --- Phase 2: Group Stage ---
-    function renderGroupStage(app) { /* ... mostly unchanged, calls finishGroupStage ... */
-        let currentGroup = state.groups[state.currentGroupIdx];
-
-        // Auto-advance finished groups
-        while (currentGroup && currentGroup.isComplete) {
-            state.currentGroupIdx++;
-            if (state.currentGroupIdx >= state.groups.length) {
-                finishGroupStage(); // Transition to next phase
-                return; // finishGroupStage handles state change & re-render
-            }
-            currentGroup = state.groups[state.currentGroupIdx];
-        }
-
-        if (!currentGroup) { /* ... error handling ... */
-             console.error("Error: No active group found."); clearState(); render(); return;
-        }
-
-        // --- Render current group match UI (Card, Title, Inputs, Button) ---
-        const card = div('div', 'card');
-        const groupTitle = div('h2', 'group-title', `Group ${currentGroup.id} - Match ${currentGroup.currentMatchIdx + 1}/${currentGroup.matches.length}`);
-        card.append(groupTitle);
-
-        const match = currentGroup.matches[currentGroup.currentMatchIdx];
-        const p1 = currentGroup.players[match.p1Idx];
-        const p2 = currentGroup.players[match.p2Idx];
-
-        // Match Input Area
-        const matchInputArea = div('div', 'match-input-area');
-        const p1Box = playerBox(p1);
-        const score1Input = document.createElement('input');
-        score1Input.type = 'number'; score1Input.min = '0'; score1Input.id = `p1_score_${match.p1Idx}`; score1Input.setAttribute('aria-label', `${p1.name} score`);
-        p1Box.append(score1Input);
-
-        const p2Box = playerBox(p2);
-        const score2Input = document.createElement('input');
-        score2Input.type = 'number'; score2Input.min = '0'; score2Input.id = `p2_score_${match.p2Idx}`; score2Input.setAttribute('aria-label', `${p2.name} score`);
-        p2Box.append(score2Input);
-
-        matchInputArea.append(p1Box, div('div', 'vs-label', 'VS'), p2Box);
-        card.append(matchInputArea);
-
-        // Record Button
-        const recordBtn = btn(`Record Score`);
-        recordBtn.style.cssText = 'display: block; margin: 0 auto;'; // Centering
-        recordBtn.onclick = () => {
-            const score1 = parseInt(score1Input.value, 10);
-            const score2 = parseInt(score2Input.value, 10);
-            if (isNaN(score1) || isNaN(score2) || score1 < 0 || score2 < 0) {
-                alert('Please enter valid scores (non-negative numbers) for both players.'); return;
-            }
-            recordScore(currentGroup, match.p1Idx, match.p2Idx, score1, score2);
-        };
-        card.append(recordBtn);
-
-        // Last match & Reset button
-        if (currentGroup.lastMatch) { /* ... unchanged ... */
-             const { p1Name, p2Name, score } = currentGroup.lastMatch;
-             card.append(div('div', 'last-match', `Last Match: ${p1Name} ${score[0]} - ${score[1]} ${p2Name}`));
-        }
-        const reset = btn('New Tournament', 'secondary'); /* ... unchanged ... */
-        reset.onclick = () => { if (confirm('Start over?')) { clearState(); render(); } };
-        card.append(reset);
-
-        app.append(card);
-        renderGroupStandings(app, currentGroup); // Show current group standings
-    }
-
-    function recordScore(group, p1Idx, p2Idx, score1, score2) { /* ... unchanged calculation logic ... */
-        const p1 = group.players[p1Idx]; const p2 = group.players[p2Idx];
-        p1.played++; p2.played++;
-        p1.goalsFor += score1; p1.goalsAgainst += score2;
-        p2.goalsFor += score2; p2.goalsAgainst += score1;
-        if (score1 > score2) { p1.wins++; p1.points += 3; p2.losses++; }
-        else if (score2 > score1) { p2.wins++; p2.points += 3; p1.losses++; }
-        else { p1.draws++; p1.points += 1; p2.draws++; p2.points += 1; }
-        group.matches[group.currentMatchIdx].score = [score1, score2];
-        group.lastMatch = { p1Name: p1.name, p2Name: p2.name, score: [score1, score2] };
-        group.currentMatchIdx++;
-        if (group.currentMatchIdx >= group.matches.length) { group.isComplete = true; }
-        saveState();
-        render();
-    }
-
-    function renderGroupStandings(app, group) { /* ... unchanged ... */
-        const st = div('div', 'card standings');
-        const groupTitle = div('h3', '', `Group ${group.id} Standings`);
-        st.append(groupTitle);
-        const table = document.createElement('table');
-        table.innerHTML = `<thead><tr><th class="player-name-col">Player</th><th>Pts</th><th>Pld</th><th>W</th><th>D</th><th>L</th><th>GF</th><th>GA</th><th>GD</th></tr></thead>`;
-        const tbody = document.createElement('tbody');
-        const sortedPlayers = [...group.players].sort(comparePlayers);
-        sortedPlayers.forEach(p => {
-            const tr = document.createElement('tr');
-            const gd = p.goalsFor - p.goalsAgainst;
-            tr.innerHTML = `<td class="player-name-col"><span style="color:${p.color}">${p.name}</span></td><td>${p.points}</td><td>${p.played}</td><td>${p.wins}</td><td>${p.draws}</td><td>${p.losses}</td><td>${p.goalsFor}</td><td>${p.goalsAgainst}</td><td>${gd > 0 ? '+' : ''}${gd}</td>`;
-            tbody.append(tr);
-        });
-        table.append(tbody); st.append(table); app.append(st);
-    }
-
-    // --- Phase 3: Transition & Playoff Setup ---
-    function finishGroupStage() {
-        console.log("Finishing group stage...");
-        state.phase = 'playoff_selection'; // Mark transition
-
-        let groupWinners = [];
-        let allRunnersUp = [];
-        let addedRunnerUp = null; // Keep track if we added one
-
-        state.groups.forEach(group => {
-            const sortedPlayers = [...group.players].sort(comparePlayers);
-            if (sortedPlayers.length > 0) {
-                groupWinners.push({...sortedPlayers[0], sourceGroup: group.id});
-                if (sortedPlayers.length > 1) {
-                     allRunnersUp.push({...sortedPlayers[1], sourceGroup: group.id});
-                }
-            }
-        });
-
-        let playoffQualifiers = [...groupWinners];
-
-        if (groupWinners.length % 2 !== 0 && allRunnersUp.length > 0) {
-             console.log("Odd number of winners, selecting best runner-up...");
-             allRunnersUp.sort(comparePlayers); // Sort runners-up by same criteria
-             const bestRunnerUp = allRunnersUp[0];
-             if (!playoffQualifiers.some(p => p.id === bestRunnerUp.id)) {
-                playoffQualifiers.push(bestRunnerUp);
-                addedRunnerUp = bestRunnerUp; // Remember the added runner-up
-                console.log(`Added runner-up: ${bestRunnerUp.name}`);
+        function saveState() {
+             if (state) { // Only save if state is not null
+                 localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+                 console.log("State saved.");
              } else {
-                 // Handle case where best RU is already a winner (unlikely with copies)
-                 // Or add the next best if needed and available
-                 console.log("Best runner-up already qualified or unavailable.");
+                 localStorage.removeItem(STORAGE_KEY); // Clear storage if state becomes null
+                 console.log("State is null, storage cleared.");
              }
         }
+        function clearState() { localStorage.removeItem(STORAGE_KEY); state = null; stopCamera(); stopTimer(); console.log("State cleared."); }
 
-        state.playoffQualifiers = playoffQualifiers;
-        startPlayoffs(groupWinners, addedRunnerUp); // Pass original winners and the added RU
+        // --- Camera Handling ---
+        async function setupCamera() { /* ... unchanged ... */
+             if (cameraStream) return;
+             if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) { console.warn("getUserMedia not supported"); return; }
+             try {
+                 const constraints = { video: { facingMode: "environment" }, audio: false };
+                 cameraStream = await navigator.mediaDevices.getUserMedia(constraints);
+                 cameraVideo.srcObject = cameraStream; console.log("Camera stream started.");
+             } catch (err) { console.error("Error accessing camera:", err); cameraVideo.style.backgroundColor = '#222'; } // Use fallback
+        }
+        function stopCamera() { /* ... unchanged ... */ if (cameraStream) { cameraStream.getTracks().forEach(track => track.stop()); cameraStream = null; cameraVideo.srcObject = null; console.log("Camera stream stopped."); } }
 
-        // Don't save state here, startPlayoffs will do it after setting up rounds
-        render(); // Re-render to show selection/viz and first playoff match
-    }
-
-    function startPlayoffs(groupWinners, addedRunnerUp) {
-        console.log("Starting playoffs...");
-        const qualifiers = [...state.playoffQualifiers]; // Use the final list
-        shuffle(qualifiers); // Shuffle initially
-
-        const firstRoundMatches = [];
-        let remainingQualifiers = [...qualifiers];
-
-        if (addedRunnerUp && groupWinners.length > 0) {
-            // Find the best group winner
-             const sortedWinners = [...groupWinners].sort(comparePlayers);
-             const bestWinner = sortedWinners[0];
-
-             // Find the actual bestWinner and addedRunnerUp objects in the shuffled remainingQualifiers list
-            const bestWinnerIdx = remainingQualifiers.findIndex(p => p.id === bestWinner.id);
-            const runnerUpIdx = remainingQualifiers.findIndex(p => p.id === addedRunnerUp.id);
-
-            if (bestWinnerIdx !== -1 && runnerUpIdx !== -1) {
-                 // Create the seeded match
-                 const p1 = remainingQualifiers.splice(bestWinnerIdx, 1)[0];
-                 // Adjust index if runnerUpIdx was after bestWinnerIdx
-                 const adjustedRunnerUpIdx = (runnerUpIdx > bestWinnerIdx) ? runnerUpIdx - 1 : runnerUpIdx;
-                 const p2 = remainingQualifiers.splice(adjustedRunnerUpIdx, 1)[0];
-
-                 firstRoundMatches.push({ p1: p1, p2: p2, score: null, winner: null, roundIdx: 0, matchIdx: 0 });
-                 console.log(`Seeded match: ${p1.name} vs ${p2.name}`);
-            } else {
-                 console.warn("Could not find best winner or runner-up for seeding. Proceeding with full random.");
-                 // If seeding fails, fall back to random pairing for all below
-            }
-        } else {
-             console.log("No runner-up added or no winners, proceeding with random pairing.");
+        // --- Timer Handling ---
+        function startTimer(durationSeconds) { /* ... unchanged ... */
+             stopTimer();
+             if (!state || !state.timerConfig) { console.error("Cannot start timer, missing state.timerConfig"); return; }
+             state.timerConfig.timeRemaining = durationSeconds; state.timerConfig.isPaused = false; state.timerConfig.isActive = true;
+             updateTimerDisplay();
+             timerInterval = setInterval(() => {
+                 if (!state.timerConfig.isPaused && state.timerConfig.isActive) {
+                     state.timerConfig.timeRemaining--; updateTimerDisplay();
+                     if (state.timerConfig.timeRemaining <= 0) { finalizeMatch(); }
+                 }
+             }, 1000); saveState(); console.log("Timer started");
+        }
+        function pauseTimer() { /* ... unchanged ... */ if (timerInterval && state.timerConfig.isActive) { state.timerConfig.isPaused = true; updateTimerDisplay(); document.getElementById('pause-resume-button').textContent = '▶'; saveState(); console.log("Timer paused"); } }
+        function resumeTimer() { /* ... unchanged ... */ if (timerInterval && state.timerConfig.isActive) { state.timerConfig.isPaused = false; updateTimerDisplay(); document.getElementById('pause-resume-button').textContent = '❚❚'; saveState(); console.log("Timer resumed"); } }
+        function stopTimer() { /* ... unchanged ... */ clearInterval(timerInterval); timerInterval = null; if(state && state.timerConfig) { state.timerConfig.isActive = false; state.timerConfig.isPaused = false; /* Don't reset timeRemaining */ saveState(); } console.log("Timer stopped"); }
+        function updateTimerDisplay() { /* ... unchanged ... */
+             if (!state || !state.timerConfig) return; const timerElement = document.getElementById('timer'); if (!timerElement) return;
+             const time = Math.max(0, state.timerConfig.timeRemaining); // Ensure time doesn't go negative
+             const minutes = Math.floor(time / 60); const seconds = time % 60;
+             timerElement.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+             timerElement.classList.toggle('paused', state.timerConfig.isPaused);
         }
 
+         // --- Score Handling ---
+         function incrementScore(playerIdentifier) { /* ... unchanged ... */
+             if (!state || !state.timerConfig.isActive || state.timerConfig.isPaused) return; // Prevent score changes if timer not running
 
-        // Pair the rest randomly
-        let matchCounter = firstRoundMatches.length; // Start counting from existing matches
-        while (remainingQualifiers.length >= 2) {
-            const p1 = remainingQualifiers.pop();
-            const p2 = remainingQualifiers.pop();
-             firstRoundMatches.push({ p1: p1, p2: p2, score: null, winner: null, roundIdx: 0, matchIdx: matchCounter++ });
-             console.log(`Random match: ${p1.name} vs ${p2.name}`);
-        }
+             let match; let playerObj; let isPlayoff = state.phase === 'playoff';
+             if (isPlayoff) { match = state.playoffRounds[state.currentPlayoffRoundIdx][state.currentPlayoffMatchIdx]; }
+             else { const group = state.groups[state.currentGroupIdx]; match = group.matches[group.currentMatchIdx]; }
 
-        if (remainingQualifiers.length === 1) {
-             // Handle Bye - this shouldn't happen if qualifier logic works
-             console.error("Error: Odd number of players for playoffs after seeding/pairing!");
-             // Simple fix: just add the remaining player to the next round automatically? Or error out.
-             // For now, let's assume the logic ensures even numbers.
-        }
+             if (!match.liveScore) match.liveScore = [0, 0];
+             if (playerIdentifier === 'p1') { match.liveScore[0]++; playerObj = isPlayoff ? match.p1 : state.groups[state.currentGroupIdx].players[match.p1Idx]; }
+             else { match.liveScore[1]++; playerObj = isPlayoff ? match.p2 : state.groups[state.currentGroupIdx].players[match.p2Idx]; }
 
-        state.playoffRounds = [firstRoundMatches]; // Initialize rounds
-        state.phase = 'playoff';
-        state.currentPlayoffRoundIdx = 0;
-        state.currentPlayoffMatchIdx = 0;
-        saveState();
-    }
-
-    // --- Phase 4: Playoff Stage ---
-    function renderPlayoffs(app) {
-        const roundIdx = state.currentPlayoffRoundIdx;
-        const matchIdx = state.currentPlayoffMatchIdx;
-
-        if (roundIdx < 0 || roundIdx >= state.playoffRounds.length || matchIdx >= state.playoffRounds[roundIdx].length) {
-            console.error("Invalid playoff state", state);
-            // Attempt recovery or indicate error
-            // Maybe check if tournament should be finished?
-            if(roundIdx > 0 && state.playoffRounds[roundIdx-1] && state.playoffRounds[roundIdx-1].length === 1 && state.playoffRounds[roundIdx-1][0].winner) {
-                 finishTournament(state.playoffRounds[roundIdx-1][0].winner);
-                 return;
-            }
-            app.append(div('div', 'card', 'Error in playoff state. Cannot display match.'));
-            const reset = btn('New Tournament', 'secondary');
-            reset.onclick = () => { clearState(); render(); };
-            app.append(reset);
-            return;
-        }
-
-
-        const currentRound = state.playoffRounds[roundIdx];
-        const match = currentRound[matchIdx];
-        const { p1, p2 } = match;
-
-        const card = div('div', 'card');
-        const roundNum = roundIdx + 1;
-        const totalMatchesInRound = currentRound.length;
-        const isFinal = totalMatchesInRound === 1 && roundNum > 1; // Check if it's the final
-        const titleText = isFinal ? 'Final' : `Playoffs - Round ${roundNum} - Match ${matchIdx + 1}/${totalMatchesInRound}`;
-        const title = div('h2', 'section-title', titleText);
-        card.append(title);
-
-        // --- Match Input Area ---
-        const matchInputArea = div('div', 'match-input-area');
-        const p1Box = playerBox(p1);
-        const score1Input = document.createElement('input');
-        score1Input.type = 'number'; score1Input.min = '0'; score1Input.id = `p1_score_${p1.id}`; score1Input.setAttribute('aria-label', `${p1.name} score`);
-        p1Box.append(score1Input);
-
-        const p2Box = playerBox(p2);
-        const score2Input = document.createElement('input');
-        score2Input.type = 'number'; score2Input.min = '0'; score2Input.id = `p2_score_${p2.id}`; score2Input.setAttribute('aria-label', `${p2.name} score`);
-        p2Box.append(score2Input);
-
-        matchInputArea.append(p1Box, div('div', 'vs-label', 'VS'), p2Box);
-        card.append(matchInputArea);
-
-        // Record Score Button
-        const recordBtn = btn(`Record Score`);
-        recordBtn.style.cssText = 'display: block; margin: 0 auto;';
-        recordBtn.onclick = () => {
-            const score1 = parseInt(score1Input.value, 10);
-            const score2 = parseInt(score2Input.value, 10);
-
-            if (isNaN(score1) || isNaN(score2) || score1 < 0 || score2 < 0) {
-                alert('Please enter valid scores (non-negative numbers) for both players.'); return;
-            }
-            if (score1 === score2) {
-                 alert('Draws are not allowed in playoffs! Please determine a winner (e.g., replay, penalties).'); return;
-            }
-            recordPlayoffScore(roundIdx, matchIdx, score1, score2);
-        };
-        card.append(recordBtn);
-        // --- End Match Input Area ---
-
-
-        const reset = btn('New Tournament', 'secondary');
-        reset.onclick = () => { if (confirm('Start over?')) { clearState(); render(); } };
-        card.append(reset);
-
-        app.append(card);
-
-        // Display bracket visualization (simple text-based for now)
-        renderBracket(app);
-    }
-
-     function recordPlayoffScore(roundIdx, matchIdx, score1, score2) {
-         const match = state.playoffRounds[roundIdx][matchIdx];
-         match.score = [score1, score2];
-         match.winner = (score1 > score2) ? match.p1 : match.p2; // Store the winner object
-         console.log(`Round ${roundIdx+1}, Match ${matchIdx+1}: ${match.p1.name} ${score1} - ${score2} ${match.p2.name}. Winner: ${match.winner.name}`);
-
-
-         // Advance to next match or next round
-         const currentRound = state.playoffRounds[roundIdx];
-         state.currentPlayoffMatchIdx++;
-
-         if (state.currentPlayoffMatchIdx >= currentRound.length) {
-             // Current round finished, generate next round
-             const winners = currentRound.map(m => m.winner).filter(Boolean); // Get winners of this round
-
-             if (winners.length === 1) {
-                 // Tournament finished!
-                 finishTournament(winners[0]);
-                 return; // finishTournament handles state change & re-render
-             } else if (winners.length > 1) {
-                 generateNextRound(winners);
-                 state.currentPlayoffRoundIdx++;
-                 state.currentPlayoffMatchIdx = 0;
-             } else {
-                 // Should not happen if draws are disallowed
-                 console.error("Error: No winners found after playoff round.");
-             }
+             document.getElementById(`${playerIdentifier}-score`).textContent = (playerIdentifier === 'p1' ? match.liveScore[0] : match.liveScore[1]);
+             console.log(`Score updated: ${match.liveScore[0]} - ${match.liveScore[1]}`);
+             saveState(); // Save intermediate score
          }
 
-         saveState();
-         render();
-     }
+        // --- Match Finalization ---
+        function finalizeMatch() { /* ... (Added robustness for playoff draw) ... */
+             console.log("Attempting to finalize match...");
+             stopTimer();
 
-    function generateNextRound(winners) {
-        console.log(`Generating round ${state.currentPlayoffRoundIdx + 2} with winners:`, winners.map(w=>w.name));
-        const nextRoundMatches = [];
-        const remainingWinners = [...winners];
-        shuffle(remainingWinners); // Randomize pairings for next round
+             let match, score1, score2, p1Obj, p2Obj;
+             let isPlayoff = state.phase === 'playoff';
+             let canProceed = true; // Flag to check if we can move to the next state
 
-        let matchCounter = 0;
-        while (remainingWinners.length >= 2) {
-            const p1 = remainingWinners.pop();
-            const p2 = remainingWinners.pop();
-             nextRoundMatches.push({ p1: p1, p2: p2, score: null, winner: null, roundIdx: state.currentPlayoffRoundIdx + 1, matchIdx: matchCounter++ });
+             if (isPlayoff) {
+                 const roundIdx = state.currentPlayoffRoundIdx; const matchIdx = state.currentPlayoffMatchIdx;
+                 if (roundIdx < 0 || roundIdx >= state.playoffRounds.length || matchIdx >= state.playoffRounds[roundIdx].length) {
+                     console.error("FinalizeMatch: Invalid playoff index."); return; // Exit if state is bad
+                 }
+                 match = state.playoffRounds[roundIdx][matchIdx];
+                 score1 = match.liveScore ? match.liveScore[0] : 0; score2 = match.liveScore ? match.liveScore[1] : 0;
+                 p1Obj = match.p1; p2Obj = match.p2;
+
+                 if (score1 === score2) {
+                      alert("Playoff Draw!\nIncrement score for the winner using '+' button, then click 'Exit Match' again.");
+                      canProceed = false; // Don't proceed yet
+                 } else {
+                      recordPlayoffScore(roundIdx, matchIdx, score1, score2); // This advances state internally if successful
+                 }
+             } else { // Group Stage
+                 const groupIdx = state.currentGroupIdx;
+                 if (groupIdx < 0 || groupIdx >= state.groups.length) { console.error("FinalizeMatch: Invalid group index."); return; }
+                 const group = state.groups[groupIdx];
+                 const matchIdx = group.currentMatchIdx;
+                 if (matchIdx >= group.matches.length) { console.error("FinalizeMatch: Invalid group match index."); return; }
+
+                 match = group.matches[matchIdx];
+                 const p1Idx = match.p1Idx; const p2Idx = match.p2Idx;
+                 score1 = match.liveScore ? match.liveScore[0] : 0; score2 = match.liveScore ? match.liveScore[1] : 0;
+                 p1Obj = group.players[p1Idx]; p2Obj = group.players[p2Idx];
+                 recordScore(group, p1Idx, p2Idx, score1, score2); // This advances state internally
+             }
+
+             console.log(`Match Finalized Score: ${p1Obj.name} ${score1} - ${score2} ${p2Obj.name}`);
+
+             if (canProceed) {
+                saveState(); // Save the final recorded state
+                switchToNonStreamView(); // Transition UI AFTER state is updated
+             } else {
+                // If we couldn't proceed (e.g., playoff draw), restart timer briefly? Or just wait? Let's just wait.
+                console.log("Match finalization halted (e.g., playoff draw). User action required.");
+                // Maybe re-enable interaction briefly if needed?
+             }
         }
-        state.playoffRounds.push(nextRoundMatches);
-        // state update (round/match index) happens in recordPlayoffScore
-    }
 
-     function renderBracket(app) {
-        const bracketContainer = div('div', 'card playoff-bracket');
-        bracketContainer.append(div('h3', 'section-title', 'Playoff Bracket'));
+        // --- Core Rendering Logic (Refined) ---
+        function render() {
+            appDiv.style.display = 'none'; streamContainer.style.display = 'none';
+            stopCamera(); // Default: camera off
 
-        state.playoffRounds.forEach((round, roundIndex) => {
-            const roundDiv = div('div', 'playoff-round');
-            roundDiv.append(div('h4', '', `Round ${roundIndex + 1}`));
+            console.log("Render: Phase=", state ? state.phase : 'null'); // Log current phase
 
-            round.forEach(match => {
-                const matchDiv = div('div', 'playoff-match');
-                const p1Box = playerBox(match.p1);
-                const p2Box = playerBox(match.p2);
-                const scoreDiv = div('div', 'match-score');
-
-                if (match.score !== null) {
-                     scoreDiv.textContent = `${match.score[0]} - ${match.score[1]}`;
-                     // Highlight winner/loser visually
-                     if (match.winner) {
-                          if (match.winner.id === match.p1.id) {
-                               p1Box.querySelector('.pname').classList.add('winner');
-                               p2Box.querySelector('.pname').classList.add('loser');
-                          } else {
-                               p2Box.querySelector('.pname').classList.add('winner');
-                               p1Box.querySelector('.pname').classList.add('loser');
-                          }
-                     }
+            if (!state) {
+                console.log("Render -> Create Form");
+                renderCreateForm(appDiv);
+                appDiv.style.display = 'flex';
+            } else if (state.phase === 'completed') {
+                console.log("Render -> Champion Screen");
+                renderChampion(appDiv);
+                appDiv.style.display = 'flex';
+            } else if (state.phase === 'playoff') {
+                const roundIdx = state.currentPlayoffRoundIdx;
+                const matchIdx = state.currentPlayoffMatchIdx;
+                if (roundIdx >= 0 && roundIdx < state.playoffRounds.length &&
+                    matchIdx >= 0 && matchIdx < state.playoffRounds[roundIdx].length)
+                {
+                    console.log("Render -> Playoff Stream View");
+                    renderStreamView(); // Renders into streamContainer
+                    streamContainer.style.display = 'block'; // Show stream view
                 } else {
-                    scoreDiv.textContent = 'vs';
+                    console.warn("Render: Playoff phase, but invalid match index. State:", JSON.parse(JSON.stringify(state)));
+                    renderBracket(appDiv); // Show bracket as fallback
+                    appDiv.style.display = 'flex';
+                }
+            } else if (state.phase === 'group') {
+                const groupIdx = state.currentGroupIdx;
+                // Find the *next* playable group/match index
+                let playableGroupFound = false;
+                let currentGroup = null;
+                let currentMatchIdx = -1;
+
+                 if (groupIdx >= 0 && groupIdx < state.groups.length) {
+                     currentGroup = state.groups[groupIdx];
+                     if (!currentGroup.isComplete && currentGroup.currentMatchIdx < currentGroup.matches.length) {
+                         playableGroupFound = true;
+                         currentMatchIdx = currentGroup.currentMatchIdx;
+                     }
+                 }
+
+                if (playableGroupFound) {
+                    console.log("Render -> Group Stream View");
+                    renderStreamView(); // Renders into streamContainer
+                    streamContainer.style.display = 'block'; // Show stream view
+                } else {
+                     // Current group is done or index invalid, check if *all* groups are done
+                     const allGroupsComplete = state.groups.every(g => g.isComplete);
+                     if (allGroupsComplete) {
+                         console.log("Render: All groups complete -> Attempting finishGroupStage");
+                         // Avoid race condition/infinite loop: Check if already transitioning
+                         if (state.phase === 'group') { // Only call if *still* in group phase
+                             finishGroupStage(); // This should change phase & trigger re-render
+                             // Return here to avoid rendering appDiv immediately
+                             return;
+                         } else {
+                             console.warn("Render: Group phase ended, but stuck? State:", state.phase);
+                             renderCreateForm(appDiv); // Fallback
+                             appDiv.style.display = 'flex';
+                         }
+                     } else {
+                         console.warn("Render: Group phase, current invalid, but not all complete. State:", JSON.parse(JSON.stringify(state)));
+                         // Maybe try advancing group index here? Could lead to issues if called repeatedly.
+                         // Safer fallback for now:
+                          renderCreateForm(appDiv);
+                          appDiv.style.display = 'flex';
+                     }
+                }
+            } else if (state.phase === 'playoff_selection') {
+                console.log("Render -> Playoff Selection Screen");
+                renderPlayoffSelection(appDiv); // Renders into appDiv
+                // Add button to start first playoff match explicitly
+                const startButton = btn("Start First Playoff Match");
+                startButton.style.marginTop = '1rem';
+                startButton.onclick = () => {
+                    if (state.phase === 'playoff_selection' && state.playoffRounds && state.playoffRounds.length > 0 && state.playoffRounds[0].length > 0) {
+                         state.phase = 'playoff'; // Move to playoff phase
+                         state.currentPlayoffRoundIdx = 0;
+                         state.currentPlayoffMatchIdx = 0;
+                         saveState();
+                         render(); // Re-render -> should now show playoff stream view
+                    } else { console.error("Playoff state not ready."); alert("Error: Playoff data not found."); }
+                };
+                // Check if button already exists to prevent duplicates on re-renders
+                if (!document.getElementById('start-playoff-btn')) {
+                     startButton.id = 'start-playoff-btn';
+                     appDiv.appendChild(startButton);
+                }
+                appDiv.style.display = 'flex'; // Show the selection screen
+
+            } else {
+                console.error("Render: Unknown state phase:", state ? state.phase : 'null', "-> Fallback: Create Form");
+                renderCreateForm(appDiv);
+                appDiv.style.display = 'flex';
+            }
+        }
+
+
+        // --- Phase 1: Setup ---
+        function renderCreateForm(app) { /* ... (Added timer input validation) ... */
+            app.innerHTML = ''; // Clear previous content
+            const card = div('div', 'card');
+            const settingsCont = div('div');
+            const listCont = div('div');
+            const addBtn = btn('Add Player');
+            const startBtn = btn('Start Tournament', 'secondary');
+
+            const groupSizeRow = div('div', 'settings-row'); /* ... group size input ... */
+             groupSizeRow.innerHTML = `<label for="maxGroupSizeInput">Max Players per Group:</label><input type="number" id="maxGroupSizeInput" min="2" value="4" class="player-input" style="width: 60px; flex-grow: 0;">`;
+            const timerRow = div('div', 'settings-row'); /* ... timer input ... */
+             // Load default from potentially existing config state, even if state is null overall
+             const currentConfigDuration = (state && state.timerConfig && state.timerConfig.durationMinutes) ? state.timerConfig.durationMinutes : 5;
+             timerRow.innerHTML = `<label for="matchDurationInput">Match Length (minutes):</label><input type="number" id="matchDurationInput" min="1" value="${currentConfigDuration}" class="player-input" style="width: 60px; flex-grow: 0;">`;
+            settingsCont.append(groupSizeRow, timerRow);
+            card.append(settingsCont, listCont, addBtn, startBtn);
+            app.append(card);
+
+            let players = []; /* ... refreshPlayerList, addBtn logic unchanged ... */
+             function refreshPlayerList() { /* ... unchanged ... */
+                listCont.innerHTML = ''; players.forEach((p, i) => {
+                const row = div('div', 'player-row'); const dot = div('div', 'player-color-static'); dot.style.background = p.color; dot.onclick = () => { p.color = randomColor(); dot.style.background = p.color; inpColor.value = p.color; };
+                const inpName = document.createElement('input'); inpName.placeholder = 'Name'; inpName.className = 'player-input'; inpName.value = p.name; inpName.oninput = e => p.name = e.target.value;
+                const inpColor = document.createElement('input'); inpColor.type = 'color'; inpColor.value = p.color; inpColor.oninput = e => { p.color = e.target.value; dot.style.background = p.color; };
+                const del = btn('x', 'secondary'); del.onclick = () => { players.splice(i, 1); refreshPlayerList(); }; row.append(dot, inpName, inpColor, del); listCont.append(row); });
+             }
+             addBtn.onclick = () => { players.push({ id: 'P' + Date.now() + players.length, name: '', color: randomColor() }); refreshPlayerList(); };
+
+            startBtn.onclick = () => {
+                const cleanPlayers = players.filter(p => p.name.trim());
+                const maxGroupSize = parseInt(document.getElementById('maxGroupSizeInput').value, 10);
+                const matchDuration = parseInt(document.getElementById('matchDurationInput').value, 10);
+
+                if (cleanPlayers.length < 2) { alert('Need at least 2 players'); return; }
+                if (isNaN(maxGroupSize) || maxGroupSize < 2) { alert('Max players per group must be at least 2'); return; }
+                if (isNaN(matchDuration) || matchDuration < 1) { alert('Match duration must be at least 1 minute.'); return; }
+                // Confirmation?
+
+                const timerConfig = { durationMinutes: matchDuration, timeRemaining: matchDuration * 60, isPaused: false, isActive: false };
+                startTournament(cleanPlayers, maxGroupSize, timerConfig); // Pass validated config
+            };
+            refreshPlayerList();
+        }
+
+        function startTournament(initialPlayers, maxGroupSize, timerConfig) { /* ... (Ensure phase is set correctly) ... */
+            shuffle(initialPlayers);
+            const groupsData = []; /* ... create groupsData ... */
+             for (let i = 0; i < initialPlayers.length; i += maxGroupSize) { groupsData.push(initialPlayers.slice(i, i + maxGroupSize)); }
+             if (groupsData.length > 1 && groupsData[groupsData.length - 1].length < 2) { const lastGroup = groupsData.pop(); lastGroup.forEach((player, index) => groupsData[index % groupsData.length].push(player)); }
+
+            const finalGroups = groupsData.map((groupPlayers, index) => { /* ... create finalGroups with players/matches ... */
+                 const playersInGroup = groupPlayers.map(p => ({ ...p, points: 0, played: 0, wins: 0, draws: 0, losses: 0, goalsFor: 0, goalsAgainst: 0 }));
+                 return { id: index + 1, players: playersInGroup, matches: generateMatches(playersInGroup), currentMatchIdx: 0, isComplete: false, lastMatch: null };
+            });
+            finalGroups.forEach(group => shuffle(group.matches));
+
+            // --- Critical: Set the state object correctly ---
+            state = {
+                phase: 'group', // Explicitly set to group phase
+                groups: finalGroups,
+                currentGroupIdx: 0,
+                timerConfig: timerConfig, // Store timer config
+                playoffQualifiers: [],
+                playoffRounds: [],
+                currentPlayoffRoundIdx: -1,
+                currentPlayoffMatchIdx: -1,
+                champion: null
+            };
+            console.log("Tournament Started. Initial State:", JSON.parse(JSON.stringify(state)));
+            saveState(); // Save the newly created state *before* rendering
+            render();    // Now render based on the saved 'group' phase state
+        }
+
+        // --- Phase 2: Group Stage ---
+        function recordScore(group, p1Idx, p2Idx, score1, score2) { /* ... (Stat calculation unchanged) ... */
+             const p1 = group.players[p1Idx]; const p2 = group.players[p2Idx];
+             // Don't modify stats if scores are invalid (shouldn't happen with finalizeMatch)
+             if(isNaN(score1) || isNaN(score2)) return;
+             p1.played++; p2.played++; p1.goalsFor += score1; p1.goalsAgainst += score2; p2.goalsFor += score2; p2.goalsAgainst += score1;
+             if (score1 > score2) { p1.wins++; p1.points += 3; p2.losses++; } else if (score2 > score1) { p2.wins++; p2.points += 3; p1.losses++; } else { p1.draws++; p1.points += 1; p2.draws++; p2.points += 1; }
+             group.matches[group.currentMatchIdx].score = [score1, score2]; group.lastMatch = { p1Name: p1.name, p2Name: p2.name, score: [score1, score2] };
+             group.currentMatchIdx++; if (group.currentMatchIdx >= group.matches.length) { group.isComplete = true; }
+             // State saved by finalizeMatch -> recordScore caller
+        }
+
+        // --- Phase 3: Playoff Setup ---
+        function finishGroupStage() { /* ... (Qualifier logic unchanged, calls startPlayoffs) ... */
+             console.log("Finishing group stage...");
+             // Ensure phase is changed *before* saving and rendering playoff_selection
+             state.phase = 'playoff_selection'; // Set phase first
+
+             let groupWinners = []; let allRunnersUp = []; let addedRunnerUp = null;
+             state.groups.forEach(group => { /* ... find winners/runners-up ... */
+                const sortedPlayers = [...group.players].sort(comparePlayers);
+                if(sortedPlayers.length > 0) groupWinners.push({...sortedPlayers[0], sourceGroup: group.id});
+                if(sortedPlayers.length > 1) allRunnersUp.push({...sortedPlayers[1], sourceGroup: group.id});
+             });
+             let playoffQualifiers = [...groupWinners];
+             if (groupWinners.length % 2 !== 0 && allRunnersUp.length > 0) { /* ... add best runner-up ... */
+                 allRunnersUp.sort(comparePlayers); const bestRunnerUp = allRunnersUp[0];
+                 if (!playoffQualifiers.some(p => p.id === bestRunnerUp.id)) { playoffQualifiers.push(bestRunnerUp); addedRunnerUp = bestRunnerUp; }
+             }
+             state.playoffQualifiers = playoffQualifiers;
+             startPlayoffs(groupWinners, addedRunnerUp); // This sets up playoff rounds but doesn't change phase yet
+
+             console.log("Group stage finished, state prepared for playoff selection.");
+             saveState(); // Save the state with playoff rounds ready
+             render(); // Re-render -> should now show 'playoff_selection' screen
+        }
+
+        function startPlayoffs(groupWinners, addedRunnerUp) { /* ... (Bracket generation unchanged, ensure liveScore init) ... */
+            console.log("Setting up playoff bracket...");
+            const qualifiers = [...state.playoffQualifiers]; shuffle(qualifiers);
+            const firstRoundMatches = []; let remainingQualifiers = [...qualifiers];
+             if (addedRunnerUp && groupWinners.length > 0) { /* ... seeding logic ... */
+                 const sortedWinners = [...groupWinners].sort(comparePlayers); const bestWinner = sortedWinners[0];
+                 const bestWinnerIdx = remainingQualifiers.findIndex(p => p.id === bestWinner.id);
+                 const runnerUpIdx = remainingQualifiers.findIndex(p => p.id === addedRunnerUp.id);
+                 if (bestWinnerIdx !== -1 && runnerUpIdx !== -1) {
+                     const p1 = remainingQualifiers.splice(bestWinnerIdx, 1)[0]; const adjustedRunnerUpIdx = (runnerUpIdx > bestWinnerIdx) ? runnerUpIdx - 1 : runnerUpIdx; const p2 = remainingQualifiers.splice(adjustedRunnerUpIdx, 1)[0];
+                     firstRoundMatches.push({ p1, p2, score: null, winner: null, roundIdx: 0, matchIdx: 0, liveScore: [0,0] }); // Added liveScore
+                 } else { console.warn("Seeding failed."); /* Reset remaining for full random */ remainingQualifiers = [...qualifiers]; }
+             }
+            let matchCounter = firstRoundMatches.length;
+             while (remainingQualifiers.length >= 2) { /* ... random pairing ... */
+                 const p1 = remainingQualifiers.pop(); const p2 = remainingQualifiers.pop();
+                 firstRoundMatches.push({ p1, p2, score: null, winner: null, roundIdx: 0, matchIdx: matchCounter++, liveScore: [0,0] }); // Added liveScore
+             }
+            state.playoffRounds = [firstRoundMatches];
+            // Phase remains 'playoff_selection' until user clicks 'Start First Playoff Match'
+            state.currentPlayoffRoundIdx = -1; // Indicate not started yet
+            state.currentPlayoffMatchIdx = -1;
+            console.log("Playoff bracket generated:", state.playoffRounds);
+            // State saved by caller (finishGroupStage)
+        }
+
+        // --- Phase 4: Playoff Stage ---
+        function recordPlayoffScore(roundIdx, matchIdx, score1, score2) { /* ... (State update unchanged, call next round generation here) ... */
+             const match = state.playoffRounds[roundIdx][matchIdx];
+             match.score = [score1, score2]; match.winner = (score1 > score2) ? match.p1 : match.p2;
+
+             // --- Advance logic ---
+             const currentRound = state.playoffRounds[roundIdx];
+             // Check if this was the last match of the round *before* incrementing index
+             const isLastMatchOfRound = (matchIdx === currentRound.length - 1);
+
+             if (isLastMatchOfRound) {
+                 const winners = currentRound.map(m => m.winner).filter(Boolean);
+                 if (winners.length === 1) {
+                     finishTournament(winners[0]); // Tournament over
+                     return; // finishTournament handles render
+                 } else if (winners.length > 1) {
+                     generateNextRound(winners); // Creates next round in state.playoffRounds
+                     state.currentPlayoffRoundIdx++; // Move to next round index
+                     state.currentPlayoffMatchIdx = 0; // Start at first match of new round
+                 } else { console.error("No winners found after playoff round?"); state.currentPlayoffMatchIdx++; /* Failsafe? */ }
+             } else {
+                 state.currentPlayoffMatchIdx++; // Advance to next match in same round
+             }
+             // State saved by finalizeMatch -> recordPlayoffScore caller
+        }
+
+        function generateNextRound(winners) { /* ... (unchanged) ... */
+             console.log(`Generating round ${state.currentPlayoffRoundIdx + 2}`); const nextRoundMatches = []; const remainingWinners = [...winners]; shuffle(remainingWinners); let matchCounter = 0;
+             while (remainingWinners.length >= 2) { const p1 = remainingWinners.pop(); const p2 = remainingWinners.pop(); nextRoundMatches.push({ p1, p2, score: null, winner: null, roundIdx: state.currentPlayoffRoundIdx + 1, matchIdx: matchCounter++, liveScore: [0,0] }); }
+             state.playoffRounds.push(nextRoundMatches);
+        }
+
+        // --- Stream View Rendering ---
+        function renderStreamView() { /* ... (Ensure correct match data access) ... */
+            setupCamera();
+
+            let match, p1, p2, roundInfoText = "";
+            let score1 = 0, score2 = 0; // Default scores
+
+             try { // Add try-catch for robustness
+                if (state.phase === 'group') {
+                    const group = state.groups[state.currentGroupIdx];
+                    match = group.matches[group.currentMatchIdx];
+                    p1 = group.players[match.p1Idx]; p2 = group.players[match.p2Idx];
+                    roundInfoText = `Group ${group.id} - M ${group.currentMatchIdx + 1}/${group.matches.length}`;
+                } else { // Playoff
+                    const roundIdx = state.currentPlayoffRoundIdx; const matchIdx = state.currentPlayoffMatchIdx;
+                    const round = state.playoffRounds[roundIdx]; match = round[matchIdx];
+                    p1 = match.p1; p2 = match.p2;
+                    const isFinal = round.length === 1 && roundIdx > 0;
+                    roundInfoText = isFinal ? 'Final' : `Playoffs R${roundIdx + 1} - M ${matchIdx + 1}/${round.length}`;
                 }
 
-                matchDiv.append(p1Box, scoreDiv, p2Box);
-                roundDiv.append(matchDiv);
-            });
-            bracketContainer.append(roundDiv);
-        });
-        app.append(bracketContainer);
-    }
+                if (!match.liveScore) match.liveScore = [0, 0]; // Ensure liveScore exists
+                score1 = match.liveScore[0]; score2 = match.liveScore[1];
 
-    // --- Phase 5: Tournament End ---
-    function finishTournament(champion) {
-        console.log("Tournament Finished! Champion:", champion.name);
-        state.phase = 'completed';
-        state.champion = champion;
-        saveState();
-        render();
-    }
+             } catch (error) {
+                  console.error("Error getting match data for stream view:", error, "State:", JSON.parse(JSON.stringify(state)));
+                  // Display error in overlay?
+                  document.getElementById('match-info').textContent = "Error loading match";
+                  return; // Stop rendering this view if data is bad
+             }
 
-    function renderChampion(app) {
-        const card = div('div', 'card champion-box');
-        card.append(div('h2', 'section-title', 'Tournament Champion!'));
 
-        if (state.champion) {
-             const champBox = playerBox(state.champion);
-             // Make champion display bigger
-             champBox.querySelector('.player-color').style.width = '80px';
-             champBox.querySelector('.player-color').style.height = '80px';
-              champBox.querySelector('.pname').style.fontSize = '2rem'; // Larger name
-              champBox.querySelector('.pname').style.fontWeight = 'bold';
-             card.append(champBox);
-        } else {
-            card.append(div('p', '', 'Error: Champion data not found.'));
+            // --- Populate Overlay ---
+            const el = (id) => document.getElementById(id);
+            el('match-info').textContent = roundInfoText;
+            el('player1-name').textContent = p1.name; el('player1-name').style.color = p1.color;
+            el('player1-score').textContent = score1;
+            el('player2-name').textContent = p2.name; el('player2-name').style.color = p2.color;
+            el('player2-score').textContent = score2;
+
+            // Timer
+            if (!state.timerConfig.isActive) { startTimer(state.timerConfig.timeRemaining); } // Start timer if not already active
+            updateTimerDisplay();
+
+            // --- Event Listeners ---
+            el('player1-goal-button').onclick = () => incrementScore('p1');
+            el('player2-goal-button').onclick = () => incrementScore('p2');
+            const pauseResumeBtn = el('pause-resume-button');
+            pauseResumeBtn.onclick = () => { if (state.timerConfig.isPaused) resumeTimer(); else pauseTimer(); };
+            pauseResumeBtn.textContent = state.timerConfig.isPaused ? '▶' : '❚❚';
+            el('exit-stream-button').onclick = () => {
+                 if (state.timerConfig.isActive && state.timerConfig.timeRemaining > 0 && !state.timerConfig.isPaused) {
+                      if (!confirm("Timer still running! Exit and finalize match with current score?")) return;
+                 } else if (state.phase === 'playoff' && match.liveScore[0] === match.liveScore[1]) {
+                      // Don't ask confirm if waiting for playoff tie break
+                 }
+                  else {
+                      if (!confirm("Exit and finalize match with current score?")) return;
+                 }
+                 finalizeMatch(); // Attempt to finalize
+            };
         }
 
-        const restart = btn('New Tournament');
-        restart.onclick = () => { clearState(); render(); };
-        card.append(restart);
-        app.append(card);
+        function switchToNonStreamView() { /* ... unchanged ... */ stopCamera(); stopTimer(); streamContainer.style.display = 'none'; appDiv.style.display = 'flex'; render(); }
 
-        // Optionally show final bracket and group standings again
-        renderBracket(app);
-        state.groups.forEach(group => renderGroupStandings(app, group));
-    }
+        // --- Phase 5: Champion ---
+        function renderChampion(app) { /* ... unchanged ... */
+            app.innerHTML = ''; const card = div('div', 'card champion-box'); card.append(div('h2', 'section-title', 'Tournament Champion!'));
+            if (state.champion) { const champBox = div('div'); const dot = div('div', 'player-color-static'); dot.style.background = state.champion.color; dot.style.width = 'clamp(60px, 15vh, 80px)'; dot.style.height = 'clamp(60px, 15vh, 80px)'; dot.style.margin = '0 auto 0.5rem auto'; const nm = div('div', 'player-name', state.champion.name); nm.style.fontSize = 'calc(var(--font-size-large) * 1.1)'; nm.style.fontWeight = 'bold'; champBox.append(dot, nm); card.append(champBox);
+            } else { card.append(div('p', '', 'Error: Champion data not found.')); }
+            const restart = btn('New Tournament'); restart.onclick = () => { clearState(); render(); }; card.append(restart); app.append(card);
+            if(state.playoffRounds && state.playoffRounds.length > 0) renderBracket(app);
+            if(state.groups) state.groups.forEach(group => renderGroupStandings(app, group));
+        }
 
-    // --- Helper Functions ---
-    function comparePlayers(a, b) { /* ... unchanged ... */
-        const gdA = a.goalsFor - a.goalsAgainst; const gdB = b.goalsFor - b.goalsAgainst;
-        if (b.points !== a.points) return b.points - a.points;
-        if (gdB !== gdA) return gdB - gdA;
-        if (b.goalsFor !== a.goalsFor) return b.goalsFor - a.goalsFor;
-        return a.name.localeCompare(b.name);
-    }
-    function shuffle(a) { /* ... unchanged ... */
-        for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1));[a[i], a[j]] = [a[j], a[i]]; }
-    }
-    function div(tag, cls = '', text = '') { /* ... unchanged ... */
-        const d = document.createElement(tag); if (cls) d.className = cls; if (text) d.textContent = text; return d;
-    }
-    function btn(text, cls = '') { /* ... unchanged ... */
-        const b = document.createElement('button'); b.textContent = text; if (cls) b.className = cls; return b;
-    }
-    function playerBox(p) { /* ... unchanged ... */
-        const box = div('div', 'p-box'); const dot = div('div', 'player-color'); dot.style.background = p.color;
-        const nm = div('div', 'pname', p.name); box.append(dot, nm); return box;
-    }
-    function randomColor() { /* ... unchanged ... */
-        return '#' + Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0');
-    }
-     function generateMatches(groupPlayers) { /* ... unchanged ... */
-        const matches = []; const playerIndices = groupPlayers.map((_, index) => index);
-        for (let i = 0; i < playerIndices.length; i++) {
-            for (let j = i + 1; j < playerIndices.length; j++) {
-                matches.push({ p1Idx: playerIndices[i], p2Idx: playerIndices[j], score: null });
-            }
-        } return matches;
-    }
-    function renderPlayoffSelection(app) { /* ... kept for review if needed ... */
-        const card = div('div', 'card');
-        card.append(div('h2', 'group-title', 'Playoff Qualifiers Determined'));
-        if (!state.playoffQualifiers || state.playoffQualifiers.length === 0) {
-             card.append(div('p', '', 'No players qualified.'));
-        } else {
-             const qualifierList = div('div'); /* ... display list ... */
-             qualifierList.style.display = 'flex'; qualifierList.style.flexWrap = 'wrap'; qualifierList.style.justifyContent = 'center';
+        // --- Bracket Rendering ---
+         function renderBracket(app) { /* ... (Ensure p-box helper used correctly) ... */
+             const bracketContainer = div('div', 'card playoff-bracket'); bracketContainer.append(div('h3', 'section-title', 'Playoff Bracket'));
+             if (!state || !state.playoffRounds) return; // Guard
+             state.playoffRounds.forEach((round, roundIndex) => {
+                 const roundDiv = div('div', 'playoff-round'); roundDiv.append(div('h4', '', `Round ${roundIndex + 1}`));
+                 round.forEach(match => {
+                     const matchDiv = div('div', 'playoff-match');
+                     // Use helper for player boxes, then style loser/winner
+                     const p1BoxEl = playerBox(match.p1); const p2BoxEl = playerBox(match.p2);
+                     const scoreDiv = div('div', 'match-score');
+                     if (match.score !== null) {
+                         scoreDiv.textContent = `${match.score[0]} - ${match.score[1]}`;
+                         if (match.winner) {
+                             if (match.winner.id === match.p1.id) { p1BoxEl.querySelector('.pname').classList.add('winner'); p2BoxEl.querySelector('.pname').classList.add('loser'); }
+                             else { p2BoxEl.querySelector('.pname').classList.add('winner'); p1BoxEl.querySelector('.pname').classList.add('loser'); }
+                         }
+                     } else { scoreDiv.textContent = 'vs'; }
+                     matchDiv.append(p1BoxEl, scoreDiv, p2BoxEl); roundDiv.append(matchDiv);
+                 }); bracketContainer.append(roundDiv);
+             }); app.append(bracketContainer);
+         }
+
+         // --- Standings Rendering ---
+         function renderGroupStandings(app, group) { /* ... unchanged ... */
+             const st = div('div', 'card standings'); const groupTitle = div('h3', '', `Group ${group.id} Standings`); st.append(groupTitle);
+             const table = document.createElement('table'); table.innerHTML = `<thead><tr><th class="player-name-col">Player</th><th>Pts</th><th>Pld</th><th>W</th><th>D</th><th>L</th><th>GF</th><th>GA</th><th>GD</th></tr></thead>`;
+             const tbody = document.createElement('tbody'); const sortedPlayers = [...group.players].sort(comparePlayers);
+             sortedPlayers.forEach(p => { const tr = document.createElement('tr'); const gd = p.goalsFor - p.goalsAgainst; tr.innerHTML = `<td class="player-name-col"><span style="color:${p.color}">${p.name}</span></td><td>${p.points}</td><td>${p.played}</td><td>${p.wins}</td><td>${p.draws}</td><td>${p.losses}</td><td>${p.goalsFor}</td><td>${p.goalsAgainst}</td><td>${gd > 0 ? '+' : ''}${gd}</td>`; tbody.append(tr); });
+             table.append(tbody); st.append(table); app.append(st);
+         }
+
+         // --- Playoff Selection Screen ---
+         function renderPlayoffSelection(app) { /* ... (Ensure app clear, check for button id) ... */
+             app.innerHTML = ''; // Clear previous app content
+             const card = div('div', 'card'); card.append(div('h2', 'section-title', 'Playoff Qualifiers'));
+             const qualifierList = div('div'); qualifierList.style.display = 'flex'; qualifierList.style.flexWrap = 'wrap'; qualifierList.style.justifyContent = 'center';
              state.playoffQualifiers.forEach(p => { const box = playerBox(p); box.style.margin = '0.5rem'; qualifierList.append(box); });
-             card.append(qualifierList);
-        }
-        app.append(card);
-        // Visualization Placeholder
-        const vizContainer = div('div', 'visualization card');
-        vizContainer.append(div('h3', 'group-title', 'Advancement Visualization'));
-        const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-        svg.setAttribute('viewBox', '0 0 300 150');
-        vizContainer.append(svg);
-        app.append(vizContainer);
-        renderBasicVisualization(svg, state.playoffQualifiers);
-    }
-     function renderBasicVisualization(svgElement, qualifiers) { /* ... unchanged ... */
-        svgElement.innerHTML = ''; if (!qualifiers || qualifiers.length === 0) return;
-        const width = 300; const height = 150; const nodeRadius = 8; const padding = 20; const targetY = height - padding - 15; const targetX = width / 2;
-        const playoffText = document.createElementNS('http://www.w3.org/2000/svg', 'text'); playoffText.setAttribute('x', targetX); playoffText.setAttribute('y', targetY + 10); playoffText.setAttribute('class', 'playoff-area-text'); playoffText.textContent = 'Playoffs'; svgElement.appendChild(playoffText);
-        const numQualifiers = qualifiers.length;
-        qualifiers.forEach((player, index) => {
-            const angle = (Math.PI * (index + 0.5)) / numQualifiers; const startX = targetX + (width / 2 - padding * 2) * Math.cos(angle - Math.PI / 2); const startY = (height / 2) - (height / 3) * Math.sin(angle - Math.PI / 2);
-            const line = document.createElementNS('http://www.w3.org/2000/svg', 'line'); line.setAttribute('x1', startX); line.setAttribute('y1', startY); line.setAttribute('x2', targetX); line.setAttribute('y2', targetY); line.setAttribute('class', 'qualifier-line'); svgElement.appendChild(line);
-            const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle'); circle.setAttribute('cx', startX); circle.setAttribute('cy', startY); circle.setAttribute('r', nodeRadius); circle.setAttribute('fill', player.color); circle.setAttribute('stroke', '#fff'); circle.setAttribute('stroke-width', '1'); svgElement.appendChild(circle);
-            const text = document.createElementNS('http://www.w3.org/2000/svg', 'text'); text.setAttribute('x', startX); text.setAttribute('y', startY - nodeRadius - 2); text.setAttribute('class', 'qualifier-text'); text.textContent = player.name; svgElement.appendChild(text);
-        });
-     }
+             card.append(qualifierList); app.append(card);
+             // Viz...
+             const vizContainer = div('div', 'visualization card'); vizContainer.append(div('h3', 'group-title', 'Advancement Visualization')); const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg'); svg.setAttribute('viewBox', '0 0 300 150'); vizContainer.append(svg); app.append(vizContainer); renderBasicVisualization(svg, state.playoffQualifiers);
 
-})();
-</script>
+              // Add start button (check if exists handled in main render now)
+             // const startButton = btn("Start First Playoff Match"); ...
+             // app.append(startButton);
+         }
 
+
+        // --- Utility Functions ---
+        function comparePlayers(a, b) { /* ... unchanged ... */ const gdA = a.goalsFor - a.goalsAgainst; const gdB = b.goalsFor - b.goalsAgainst; if (b.points !== a.points) return b.points - a.points; if (gdB !== gdA) return gdB - gdA; if (b.goalsFor !== a.goalsFor) return b.goalsFor - a.goalsFor; return a.name.localeCompare(b.name); }
+        function shuffle(a) { /* ... unchanged ... */ for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } }
+        function div(tag, cls = '', text = '') { /* ... unchanged ... */ const d = document.createElement(tag); if (cls) d.className = cls; if (text) d.textContent = text; return d; }
+        function btn(text, cls = '') { /* ... unchanged ... */ const b = document.createElement('button'); b.textContent = text; if (cls) b.className = cls; return b; }
+        function playerBox(p) { /* ... (Used by bracket and selection) ... */ const box = div('div', 'p-box'); const dot = div('div', 'player-color-static'); dot.style.background = p.color; const nm = div('div', 'pname', p.name); box.append(dot, nm); return box; } // Use static color dot helper
+        function randomColor() { /* ... unchanged ... */ return '#' + Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0'); }
+        function generateMatches(groupPlayers) { /* ... (Ensure liveScore init) ... */ const matches = []; const pIdx = groupPlayers.map((_, i) => i); for (let i = 0; i < pIdx.length; i++) { for (let j = i + 1; j < pIdx.length; j++) { matches.push({ p1Idx: pIdx[i], p2Idx: pIdx[j], score: null, liveScore:[0,0] }); } } return matches; }
+        function renderBasicVisualization(svg, qualifiers) { /* ... unchanged ... */ svg.innerHTML = ''; if (!qualifiers || qualifiers.length === 0) return; const width = 300; const height = 150; const nodeRadius = 8; const padding = 20; const targetY = height - padding - 15; const targetX = width / 2; const playoffText = document.createElementNS('http://www.w3.org/2000/svg', 'text'); playoffText.setAttribute('x', targetX); playoffText.setAttribute('y', targetY + 10); playoffText.setAttribute('class', 'playoff-area-text'); playoffText.textContent = 'Playoffs'; svgElement.appendChild(playoffText); const numQ = qualifiers.length; qualifiers.forEach((p, i) => { const angle = (Math.PI * (i + 0.5)) / numQ; const sX = targetX + (width / 2 - padding * 2) * Math.cos(angle - Math.PI / 2); const sY = (height / 2) - (height / 3) * Math.sin(angle - Math.PI / 2); const line = document.createElementNS('http://www.w3.org/2000/svg', 'line'); line.setAttribute('x1', sX); line.setAttribute('y1', sY); line.setAttribute('x2', targetX); line.setAttribute('y2', targetY); line.setAttribute('class', 'qualifier-line'); svgElement.appendChild(line); const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle'); circle.setAttribute('cx', sX); circle.setAttribute('cy', sY); circle.setAttribute('r', nodeRadius); circle.setAttribute('fill', p.color); circle.setAttribute('stroke', '#fff'); circle.setAttribute('stroke-width', '1'); svgElement.appendChild(circle); const text = document.createElementNS('http://www.w3.org/2000/svg', 'text'); text.setAttribute('x', sX); text.setAttribute('y', sY - nodeRadius - 2); text.setAttribute('class', 'qualifier-text'); text.textContent = p.name; svgElement.appendChild(text); }); }
+
+    })();
+    </script>
 </body>
 </html>
